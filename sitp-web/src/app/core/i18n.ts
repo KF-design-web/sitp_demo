@@ -43,4 +43,6 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'error.fallback': { en: 'Something went wrong.', fr: 'Une erreur est survenue.' },
   'error.401-login': { en: 'Invalid email or password.', fr: 'E-mail ou mot de passe invalide.' },
   'error.409-email': { en: 'This email is already registered.', fr: 'Cet e-mail est déjà enregistré.' },
+  'error.email-invalid': { en: 'Enter a valid email address.', fr: 'Saisissez une adresse e-mail valide.' },
+  'error.required': { en: 'This field is required.', fr: 'Ce champ est requis.' },
 };
