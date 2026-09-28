@@ -28,7 +28,7 @@ let nextId = 0;
         (change)="onChange($event)"
         (blur)="onBlur()"
         [disabled]="disabled()"
-        class="w-full rounded-lg border bg-surface px-3 py-3 text-base text-ink
+        class="w-full rounded-xl border bg-surface px-3 py-3 text-base text-ink
                focus:outline-none focus:ring-2 focus:ring-primary
                disabled:cursor-not-allowed disabled:opacity-50"
         [class.border-error]="blurred() && !!error()"

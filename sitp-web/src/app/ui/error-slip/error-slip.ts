@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+
 @Component({
   selector: 'app-error-slip',
   changeDetection: ChangeDetectionStrategy.OnPush,

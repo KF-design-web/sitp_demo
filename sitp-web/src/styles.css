@@ -18,6 +18,8 @@
   --color-error-soft: #FEF2F2;
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 1px 3px rgba(25, 25, 25, 0.08);
+  --shadow-button: 0 2px 8px rgba(193, 95, 60, 0.28);
+  --shadow-button-hover: 0 4px 14px rgba(193, 95, 60, 0.38);
 }
 
 @layer base {

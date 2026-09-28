@@ -13,9 +13,10 @@ import {
       [type]="type()"
       [disabled]="loading()"
       [attr.aria-busy]="loading() ? true : null"
-      class="w-full rounded-lg py-3 text-base font-medium transition-colors
+      class="w-full rounded-xl py-3 text-base font-medium
              focus:outline-none focus:ring-2 focus:ring-primary
-             disabled:cursor-not-allowed disabled:opacity-50"
+             disabled:cursor-not-allowed disabled:opacity-50
+             transition-[background-color,box-shadow,transform] duration-150"
       [class]="variantClasses()"
     >
       @if (loading()) {
@@ -34,7 +35,7 @@ export class Button {
 
   readonly variantClasses = computed(() =>
     this.variant() === 'primary'
-      ? 'bg-primary text-white hover:bg-primary-dark'
+      ? 'bg-primary text-white shadow-button hover:bg-primary-dark hover:shadow-button-hover hover:-translate-y-px'
       : 'border border-line bg-surface text-ink hover:bg-bg'
   );
 }

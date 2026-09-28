@@ -131,6 +131,7 @@ export class RegisterPage {
   }
 
   constructor() {
+
     this.form.controls.accountType.valueChanges.subscribe((v) => {
       if (v === 'OUTSIDER') {
         this.form.controls.track.reset('');
