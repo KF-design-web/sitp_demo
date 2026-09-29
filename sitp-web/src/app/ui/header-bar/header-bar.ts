@@ -13,24 +13,24 @@ import { Button } from '../button/button';
   template: `
     <header class="h-16 border-b border-line bg-surface">
       <div class="mx-auto flex h-full max-w-6xl items-center justify-between px-8 md:px-4">
-        <a routerLink="/" class="text-xl font-bold text-ink">SITP</a>
+        <div class="flex items-center gap-6">
+          <a routerLink="/" class="text-xl font-bold text-ink">SITP</a>
+          <a
+            routerLink="/courses"
+            class="text-sm font-medium text-muted transition-colors hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {{ t('header.courses') }}
+          </a>
+        </div>
 
         <div class="flex items-center gap-4">
           @if (user(); as u) {
             <span class="hidden text-sm text-muted sm:inline">{{ u.email }}</span>
-            <app-button
-              variant="secondary"
-              loadingLabel=""
-              (click)="logout()"
-            >
+            <app-button variant="secondary" compact (click)="logout()">
               {{ t('header.logout') }}
             </app-button>
           } @else {
-            <app-button
-              variant="secondary"
-              loadingLabel=""
-              (click)="goLogin()"
-            >
+            <app-button variant="primary" compact (click)="goLogin()">
               {{ t('header.login') }}
             </app-button>
           }

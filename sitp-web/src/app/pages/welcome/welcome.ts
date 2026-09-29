@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { SessionService } from '../../core/session.service';
 import { LangService } from '../../core/lang.service';
@@ -8,7 +8,7 @@ import { Button } from '../../ui/button/button';
 
 @Component({
   selector: 'app-welcome-page',
-  imports: [Button],
+  imports: [Button, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 shadow-card">
@@ -19,7 +19,12 @@ import { Button } from '../../ui/button/button';
         <span class="font-semibold">{{ user()?.email }}</span>
       </p>
 
-      <p class="mt-2 text-sm text-muted">{{ t('welcome.courses-soon') }}</p>
+      <p class="mt-2 text-sm text-muted">
+        <a
+          routerLink="/courses"
+          class="font-medium text-primary underline-offset-2 transition-colors hover:text-primary-dark hover:underline focus:outline-none focus:ring-2 focus:ring-primary"
+        >{{ t('welcome.browse-courses') }}</a>
+      </p>
 
       <div class="mt-8">
         <app-button variant="secondary" [loading]="loggingOut()" (click)="logout()">

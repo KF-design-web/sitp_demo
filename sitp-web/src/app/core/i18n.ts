@@ -34,12 +34,10 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   },
   'welcome.heading': { en: 'Welcome', fr: 'Bienvenue' },
   'welcome.logged-in-as': { en: 'Logged in as', fr: 'Connecté en tant que' },
-  'welcome.courses-soon': {
-    en: 'The course catalog arrives in wave 2.',
-    fr: 'Le catalogue de cours arrive dans la vague 2.',
-  },
+  'welcome.browse-courses': { en: 'Browse the courses', fr: 'Parcourir les cours' },
   'header.login': { en: 'Log in', fr: 'Connexion' },
   'header.logout': { en: 'Log out', fr: 'Déconnexion' },
+  'header.courses': { en: 'Courses', fr: 'Cours' },
   'error.unreachable': { en: 'Cannot reach the server.', fr: 'Impossible de joindre le serveur.' },
   'error.fallback': { en: 'Something went wrong.', fr: 'Une erreur est survenue.' },
   'error.401-login': { en: 'Invalid email or password.', fr: 'E-mail ou mot de passe invalide.' },
@@ -47,4 +45,18 @@ export const i18n: Record<string, { en: string; fr: string }> = {
 
   'error.email-invalid': { en: 'Enter a valid email address.', fr: 'Saisissez une adresse e-mail valide.' },
   'error.required': { en: 'This field is required.', fr: 'Ce champ est requis.' },
+
+  'courses.heading': { en: 'Our courses', fr: 'Nos cours' },
+  'courses.filter-all': { en: 'All', fr: 'Tous' },
+  'courses.filter-intern': { en: 'For interns', fr: 'Pour stagiaires' },
+  'courses.filter-outsider': { en: 'For outsiders', fr: 'Pour externes' },
+  'courses.audience-INTERN': { en: 'For interns', fr: 'Pour stagiaires' },
+  'courses.audience-OUTSIDER': { en: 'For outsiders', fr: 'Pour externes' },
+  'courses.view': { en: 'View course', fr: 'Voir le cours' },
+  'courses.empty-title': { en: 'No courses yet', fr: 'Pas encore de cours' },
+  'courses.empty-text': {
+    en: 'The noticeboard is empty — check back soon.',
+    fr: "Le tableau d'affichage est vide — revenez bientôt.",
+  },
+  'courses.retry': { en: 'Try again', fr: 'Réessayer' },
 };

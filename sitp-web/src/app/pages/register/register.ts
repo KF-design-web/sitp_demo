@@ -160,7 +160,7 @@ export class RegisterPage {
         this.authService.login({ email, password }).subscribe({
           next: (res) => {
             this.session.setUser(res.user);
-            this.router.navigate(['/welcome']);
+            this.router.navigate(['/courses']);
           },
           error: () => {
             this.submitting.set(false);

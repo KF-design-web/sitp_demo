@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   input,
+  booleanAttribute,
 } from '@angular/core';
 
 @Component({
@@ -13,11 +14,10 @@ import {
       [type]="type()"
       [disabled]="loading()"
       [attr.aria-busy]="loading() ? true : null"
-      class="w-full rounded-xl py-3 text-base font-medium
-             focus:outline-none focus:ring-2 focus:ring-primary
+      class="focus:outline-none focus:ring-2 focus:ring-primary
              disabled:cursor-not-allowed disabled:opacity-50
              transition-[background-color,box-shadow,transform] duration-150"
-      [class]="variantClasses()"
+      [class]="sizeClasses() + ' ' + variantClasses()"
     >
       @if (loading()) {
         {{ loadingLabel() }}
@@ -37,5 +37,13 @@ export class Button {
     this.variant() === 'primary'
       ? 'bg-primary text-white shadow-button hover:bg-primary-dark hover:shadow-button-hover hover:-translate-y-px'
       : 'border border-line bg-surface text-ink hover:bg-bg'
+  );
+
+  readonly compact = input(false, { transform: booleanAttribute });
+
+  readonly sizeClasses = computed(() =>
+    this.compact()
+      ? 'w-auto rounded-full px-4 py-2 text-sm'
+      : 'w-full rounded-xl py-3 text-base'
   );
 }
