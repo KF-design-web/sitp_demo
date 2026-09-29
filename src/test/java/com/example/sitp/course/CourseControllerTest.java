@@ -31,7 +31,15 @@ class CourseControllerTest {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private com.example.sitp.access.repository.SessionRepository sessionRepository;
+
+    @Autowired
+    private com.example.sitp.user.repository.UserRepository userRepository;
+
     private void cleanTables() {
+        sessionRepository.deleteAll();
+        userRepository.deleteAll();
         courseRepository.deleteAll();
     }
 
@@ -76,7 +84,51 @@ class CourseControllerTest {
 
         mockMvc.perform(get("/api/courses"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].price").doesNotExist());
+                .andExpect(jsonPath("$[*].price").doesNotExist())
+                .andExpect(jsonPath("$[*].priceVisible").value(false));
+    }
+
+    @Test
+    void loggedInMember_seesThePriceLine_theGateRuleCashedIn() throws Exception {
+        cleanTables();
+        courseRepository.save(Course.builder()
+                .title("Advanced Git")
+                .description("Branches without fear")
+                .price(new java.math.BigDecimal("49.90"))
+                .targetAudience(Audience.OUTSIDER)
+                .build());
+
+        registerAna();
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses").cookie(cookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].priceVisible").value(true))
+                .andExpect(jsonPath("$[0].price").value(49.90));
+    }
+
+    private void registerAna() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/api/auth/register")
+                        .contentType("application/x-www-form-urlencoded")
+                        .param("email", "ana@mail.com")
+                        .param("password", "password123")
+                        .param("accountType", "OUTSIDER"))
+                .andExpect(status().isCreated());
+    }
+
+    private jakarta.servlet.http.Cookie loginAndGrabCookie() throws Exception {
+        String setCookie = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/api/auth/login")
+                        .contentType("application/x-www-form-urlencoded")
+                        .param("email", "ana@mail.com")
+                        .param("password", "password123"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getHeader("Set-Cookie");
+        String[] nameAndValue = setCookie.split(";", 2)[0].split("=", 2);
+        return new jakarta.servlet.http.Cookie(nameAndValue[0], nameAndValue[1]);
     }
 
     @Test
