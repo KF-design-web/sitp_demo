@@ -6,6 +6,7 @@ import com.example.sitp.auth.exception.InvalidCaptchaException;
 import com.example.sitp.auth.exception.InvalidCredentialsException;
 import com.example.sitp.auth.exception.PasswordMismatchException;
 import com.example.sitp.auth.exception.UsernameAlreadyExistsException;
+import com.example.sitp.course.exception.CourseNotFoundException;
 import com.example.sitp.verification.exception.VerificationCodeInvalidException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleVerificationCodeInvalid(VerificationCodeInvalidException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), "Invalid or expired code."));
+    }
+
+    @ExceptionHandler(CourseNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCourseNotFound(CourseNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(HttpStatus.NOT_FOUND.value(),
+                        "Course not found."));
     }
 
     @ExceptionHandler(AccountDisabledException.class)

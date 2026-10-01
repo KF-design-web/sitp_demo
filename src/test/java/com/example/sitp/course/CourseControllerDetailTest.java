@@ -1,8 +1,13 @@
 package com.example.sitp.course;
 
+import com.example.sitp.access.repository.SessionRepository;
+import com.example.sitp.auth.captcha.CaptchaChallengeRepository;
 import com.example.sitp.course.model.Audience;
+import com.example.sitp.course.model.Chapter;
 import com.example.sitp.course.model.Course;
+import com.example.sitp.course.repository.ChapterRepository;
 import com.example.sitp.course.repository.CourseRepository;
+import com.example.sitp.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,10 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-class CourseControllerTest {
+class CourseControllerDetailTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -32,16 +35,16 @@ class CourseControllerTest {
     private CourseRepository courseRepository;
 
     @Autowired
-    private com.example.sitp.course.repository.ChapterRepository chapterRepository;
+    private ChapterRepository chapterRepository;
 
     @Autowired
-    private com.example.sitp.auth.captcha.CaptchaChallengeRepository captchaChallengeRepository;
+    private SessionRepository sessionRepository;
 
     @Autowired
-    private com.example.sitp.access.repository.SessionRepository sessionRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private com.example.sitp.user.repository.UserRepository userRepository;
+    private CaptchaChallengeRepository captchaChallengeRepository;
 
     private void cleanTables() {
         sessionRepository.deleteAll();
@@ -51,68 +54,18 @@ class CourseControllerTest {
         courseRepository.deleteAll();
     }
 
-    private Course course(String title, Audience audience) {
-        return Course.builder()
-                .title(title)
-                .description("A course called " + title)
-                .targetAudience(audience)
-                .build();
-    }
-
-    @Test
-    void loggedOutVisitor_gets200AndTheList() throws Exception {
-        cleanTables();
-
-        courseRepository.save(course("Spring Boot Basics", Audience.INTERN));
-        courseRepository.save(course("Advanced Git", Audience.OUTSIDER));
-
-        mockMvc.perform(get("/api/courses"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].title",
-                        hasItem("Spring Boot Basics")))
-                .andExpect(jsonPath("$[*].title", hasItem("Advanced Git")))
-                .andExpect(jsonPath("$[*].targetAudience",
-                        hasItem("INTERN")))
-                .andExpect(jsonPath("$[*].targetAudience",
-                        hasItem("OUTSIDER")));
-
-    }
-
-    @Test
-    void loggedOutVisitor_seesNoPriceLine_ever() throws Exception {
-        cleanTables();
-        courseRepository.save(Course.builder()
-                .title("Advanced Git")
+    private Course seededCourse() {
+        Course c = courseRepository.save(Course.builder()
+                .title("Git Foundations")
                 .description("Branches without fear")
                 .price(new java.math.BigDecimal("49.90"))
                 .targetAudience(Audience.OUTSIDER)
                 .build());
-
-        mockMvc.perform(get("/api/courses"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].price").doesNotExist())
-                .andExpect(jsonPath("$[*].priceVisible").value(false));
-    }
-
-    @Test
-    void loggedInMember_seesThePriceLine_theGateRuleCashedIn() throws Exception {
-        cleanTables();
-        courseRepository.save(Course.builder()
-                .title("Advanced Git")
-                .description("Branches without fear")
-                .price(new java.math.BigDecimal("49.90"))
-                .targetAudience(Audience.OUTSIDER)
-                .build());
-
-        registerAna();
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
-
-        mockMvc.perform(get("/api/courses").cookie(cookie))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].priceVisible").value(true))
-                .andExpect(jsonPath("$[0].price").value(49.90));
+        chapterRepository.save(Chapter.builder()
+                .title("First steps").videoUrl("bunny-ref-1").position(1).course(c).build());
+        chapterRepository.save(Chapter.builder()
+                .title("Going further").videoUrl("bunny-ref-2").position(2).course(c).build());
+        return c;
     }
 
     private String[] freshCaptcha() throws Exception {
@@ -165,11 +118,54 @@ class CourseControllerTest {
     }
 
     @Test
-    void emptyCatalog_answersEmptyList_not404() throws Exception {
+    void anonymousKnock_earnsTheBuildingsLock_401() throws Exception {
         cleanTables();
 
-        mockMvc.perform(get("/api/courses"))
+        mockMvc.perform(get("/api/courses/" + 42L))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void loggedInMember_unknownCourse_earnsTheThrown404() throws Exception {
+        cleanTables();
+        registerAna();
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + 9999L).cookie(cookie))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Course not found."));
+    }
+
+    @Test
+    void loggedInMember_realCourse_200WithChaptersInTeachingOrder() throws Exception {
+        cleanTables();
+        Long id = seededCourse().getId();
+        registerAna();
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + id).cookie(cookie))
                 .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.title").value("Git Foundations"))
+                .andExpect(jsonPath("$.chapters[*].title").value(
+                        org.hamcrest.Matchers.contains("First steps", "Going further")))
+                .andExpect(jsonPath("$.chapters[*].position").value(
+                        org.hamcrest.Matchers.contains(1, 2)))
+                .andExpect(jsonPath("$.chapters[0].videoUrl").value("bunny-ref-1"))
+                .andExpect(jsonPath("$.priceVisible").value(true))
+                .andExpect(jsonPath("$.price").value(49.90));
+    }
+
+    @Test
+    void anyLoggedInMember_opensAnyCourse_theStubCostPinnedLoudly() throws Exception {
+        cleanTables();
+        Long id = seededCourse().getId();
+        registerAna();
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + id).cookie(cookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.chapters", hasSize(2)));
     }
 }
