@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../core/api-url';
-import { CourseSummary } from './courses.models';
+import { CourseDetail, CourseSummary } from './courses.models';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
@@ -9,5 +9,9 @@ export class CourseService {
 
   getAll() {
     return this.http.get<CourseSummary[]>(`${API_URL}/courses`);
+  }
+
+  getById(id: number) {
+    return this.http.get<CourseDetail>(`${API_URL}/courses/${id}`);
   }
 }

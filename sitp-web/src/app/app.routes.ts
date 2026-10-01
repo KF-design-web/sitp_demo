@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginPage } from './pages/login/login';
 import { CatalogPage } from './pages/catalog/catalog';
+import { CourseDetailPage } from './pages/course-detail/course-detail';
 import { RegisterPage } from './pages/register/register';
 import { WelcomePage } from './pages/welcome/welcome';
 import { ForgotPasswordPage } from './pages/forgot-password/forgot-password';
@@ -14,4 +15,5 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordPage, title: 'SITP — Reset password' },
   { path: 'welcome', component: WelcomePage, title: 'SITP — Welcome' },
   { path: 'courses', component: CatalogPage, title: 'SITP — Courses' },
+  { path: 'courses/:id', component: CourseDetailPage, title: 'SITP — Course' },
 ];
