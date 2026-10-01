@@ -14,7 +14,7 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     Optional<Session> findByTokenAndActiveTrue(String token);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Session s SET s.active = false WHERE s.user.id = :userId AND s.active = true")
     void invalidateByUserId(@Param("userId") Long userId);
 }

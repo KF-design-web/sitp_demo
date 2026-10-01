@@ -16,5 +16,22 @@ spring:
       hibernate:
         format_sql: true
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:SITP <no-reply@sitp.local>}
+
 springdoc:
   default-support-form-data: true

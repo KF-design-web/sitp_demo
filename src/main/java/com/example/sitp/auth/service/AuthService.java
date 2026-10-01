@@ -2,9 +2,12 @@ package com.example.sitp.auth.service;
 
 import com.example.sitp.access.model.Session;
 import com.example.sitp.access.repository.SessionRepository;
+import com.example.sitp.auth.captcha.CaptchaService;
 import com.example.sitp.auth.exception.AccountDisabledException;
 import com.example.sitp.auth.exception.EmailAlreadyExistsException;
 import com.example.sitp.auth.exception.InvalidCredentialsException;
+import com.example.sitp.auth.exception.PasswordMismatchException;
+import com.example.sitp.auth.exception.UsernameAlreadyExistsException;
 import com.example.sitp.auth.dto.AuthResponse;
 import com.example.sitp.auth.dto.LoginRequest;
 import com.example.sitp.auth.dto.RegisterRequest;
@@ -13,6 +16,7 @@ import com.example.sitp.user.model.Role;
 import com.example.sitp.user.model.User;
 import com.example.sitp.user.repository.UserRepository;
 import com.example.sitp.user.dto.UserResponse;
+import com.example.sitp.verification.VerificationService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +28,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -36,49 +41,69 @@ public class AuthService {
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CaptchaService captchaService;
+    private final VerificationService verificationService;
 
     public AuthService(UserRepository userRepository,
                        SessionRepository sessionRepository,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       CaptchaService captchaService,
+                       VerificationService verificationService) {
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.captchaService = captchaService;
+        this.verificationService = verificationService;
     }
 
+    @Transactional
     public UserResponse register(RegisterRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        captchaService.verify(request.getCaptchaId(), request.getCaptchaAnswer());
+
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        String username = request.getUsername().trim().toLowerCase(Locale.ROOT);
 
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException();
         }
+        if (userRepository.existsByUsername(username)) {
+            throw new UsernameAlreadyExistsException();
+        }
 
-        if (request.getAccountType() == AccountType.INTERN && request.getTrack() == null) {
 
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "INTERN accounts must provide a track (ACADEMIC or PROFESSIONAL).");
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            throw new PasswordMismatchException();
         }
 
         User user = User.builder()
                 .email(email)
+                .username(username)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .firstName(request.getFirstName().trim())
+                .lastName(request.getLastName().trim())
+                .phoneNumber(trimOrNull(request.getPhoneNumber()))
+                .address(trimOrNull(request.getAddress()))
+                .country(trimOrNull(request.getCountry()))
+                .gender(request.getGender())
                 .role(Role.TRAINEE)
-                .accountType(request.getAccountType())
-                .enabled(true)
+                .accountType(AccountType.OUTSIDER)
+                .enabled(false)
                 .build();
 
         try {
-            return UserResponse.fromEntity(userRepository.save(user));
+            User saved = userRepository.save(user);
+            verificationService.issueEmailVerification(saved);
+            return UserResponse.fromEntity(saved);
         } catch (DataIntegrityViolationException e) {
             throw new EmailAlreadyExistsException();
         }
     }
 
-
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        captchaService.verify(request.getCaptchaId(), request.getCaptchaAnswer());
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -134,5 +159,9 @@ public class AuthService {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private static String trimOrNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
     }
 }

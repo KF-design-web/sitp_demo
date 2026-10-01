@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { SessionService } from '../../core/session.service';
 import { LangService } from '../../core/lang.service';
 import { Button } from '../../ui/button/button';
+import { ConfirmModal } from '../../ui/confirm-modal/confirm-modal';
 
 @Component({
   selector: 'app-welcome-page',
-  imports: [Button, RouterLink],
+  imports: [Button, RouterLink, ConfirmModal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 shadow-card">
@@ -16,7 +17,7 @@ import { Button } from '../../ui/button/button';
 
       <p class="mt-4 text-base text-ink">
         {{ t('welcome.logged-in-as') }}
-        <span class="font-semibold">{{ user()?.email }}</span>
+        <span class="font-semibold">{{ user()?.username }}</span>
       </p>
 
       <p class="mt-2 text-sm text-muted">
@@ -27,11 +28,22 @@ import { Button } from '../../ui/button/button';
       </p>
 
       <div class="mt-8">
-        <app-button variant="secondary" [loading]="loggingOut()" (click)="logout()">
+        <app-button variant="secondary" [loading]="loggingOut()" (click)="askLogout()">
           {{ t('header.logout') }}
         </app-button>
       </div>
     </div>
+
+    @if (confirmingLogout()) {
+      <app-confirm-modal
+        [title]="t('logout-confirm.title')"
+        [text]="t('logout-confirm.text')"
+        [confirmLabel]="t('logout-confirm.confirm')"
+        [cancelLabel]="t('logout-confirm.cancel')"
+        (confirm)="logout()"
+        (cancel)="confirmingLogout.set(false)"
+      />
+    }
   `,
 })
 export class WelcomePage {
@@ -41,6 +53,7 @@ export class WelcomePage {
   private router = inject(Router);
 
   readonly loggingOut = signal(false);
+  readonly confirmingLogout = signal(false);
   readonly user = this.session.user;
 
   constructor() {
@@ -49,7 +62,9 @@ export class WelcomePage {
     }
   }
 
-  readonly email = computed(() => this.user()?.email ?? '');
+  askLogout(): void {
+    this.confirmingLogout.set(true);
+  }
 
   t(key: string): string {
     return this.langService.t(key);

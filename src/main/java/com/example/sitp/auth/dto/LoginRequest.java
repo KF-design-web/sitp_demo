@@ -15,8 +15,18 @@ import lombok.Setter;
 public class LoginRequest {
 
     @NotBlank
-    private String email;
+    private String username;
+
+    public void setUsername(String username) {
+        this.username = username == null ? null : username.trim().toLowerCase();
+    }
 
     @NotBlank
     private String password;
+
+    @NotBlank
+    private String captchaId;
+
+    @NotBlank
+    private String captchaAnswer;
 }

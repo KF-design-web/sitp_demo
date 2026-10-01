@@ -32,6 +32,9 @@ class CourseControllerTest {
     private CourseRepository courseRepository;
 
     @Autowired
+    private com.example.sitp.auth.captcha.CaptchaChallengeRepository captchaChallengeRepository;
+
+    @Autowired
     private com.example.sitp.access.repository.SessionRepository sessionRepository;
 
     @Autowired
@@ -40,6 +43,7 @@ class CourseControllerTest {
     private void cleanTables() {
         sessionRepository.deleteAll();
         userRepository.deleteAll();
+        captchaChallengeRepository.deleteAll();
         courseRepository.deleteAll();
     }
 
@@ -107,22 +111,48 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$[0].price").value(49.90));
     }
 
+    private String[] freshCaptcha() throws Exception {
+        String body = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .get("/api/auth/captcha"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String id = body.replaceAll(".*\"id\":(\\d+).*", "$1").trim();
+        var challenge = captchaChallengeRepository.findById(Long.parseLong(id)).orElseThrow();
+        String[] parts = challenge.getQuestion().split(" ");
+        String answer = String.valueOf(Integer.parseInt(parts[2]) + Integer.parseInt(parts[4].replace("?", "")));
+        return new String[]{id, answer};
+    }
+
     private void registerAna() throws Exception {
+        String[] cap = freshCaptcha();
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .post("/api/auth/register")
                         .contentType("application/x-www-form-urlencoded")
                         .param("email", "ana@mail.com")
+                        .param("username", "ana")
+                        .param("firstName", "Ana")
+                        .param("lastName", "Example")
                         .param("password", "password123")
-                        .param("accountType", "OUTSIDER"))
+                        .param("passwordConfirm", "password123")
+                        .param("accountType", "OUTSIDER")
+                        .param("captchaId", cap[0])
+                        .param("captchaAnswer", cap[1]))
                 .andExpect(status().isCreated());
+
+        var ana = userRepository.findByUsername("ana").orElseThrow();
+        ana.setEnabled(true);
+        userRepository.save(ana);
     }
 
     private jakarta.servlet.http.Cookie loginAndGrabCookie() throws Exception {
+        String[] cap = freshCaptcha();
         String setCookie = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("email", "ana@mail.com")
-                        .param("password", "password123"))
+                        .param("username", "ana")
+                        .param("password", "password123")
+                        .param("captchaId", cap[0])
+                        .param("captchaAnswer", cap[1]))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()

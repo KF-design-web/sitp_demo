@@ -20,8 +20,12 @@ class UserRepositoryTest {
     private UserRepository userRepository;
 
     private User user(String email) {
+        String username = email.substring(0, email.indexOf('@'));
         return User.builder()
                 .email(email)
+                .username(username)
+                .firstName("Ana")
+                .lastName("Example")
                 .passwordHash("some-hash-not-a-real-password")
                 .role(Role.TRAINEE)
                 .accountType(AccountType.OUTSIDER)
@@ -49,6 +53,27 @@ class UserRepositoryTest {
         userRepository.save(user("ana@mail.com"));
 
         assertThatThrownBy(() -> userRepository.saveAndFlush(user("ana@mail.com")))
+                .isInstanceOf(Exception.class);
+    }
+
+    @Test
+    void findByUsername_returnsTheUser_whenUsernameExists() {
+        userRepository.save(user("ana@mail.com"));
+
+        var found = userRepository.findByUsername("ana");
+
+        assertThat(found).isPresent();
+        assertThat(found.get().getEmail()).isEqualTo("ana@mail.com");
+    }
+
+    @Test
+    void duplicateUsername_isRejectedByTheDatabase() {
+        userRepository.save(user("ana@mail.com"));
+
+        User impostor = user("impostor@mail.com");
+        impostor.setUsername("ana");
+
+        assertThatThrownBy(() -> userRepository.saveAndFlush(impostor))
                 .isInstanceOf(Exception.class);
     }
 

@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Languages } from 'lucide-angular';
 import { LangService } from '../../core/lang.service';
 import { SessionService } from '../../core/session.service';
 import { AuthService } from '../../auth/auth.service';
 import { Button } from '../button/button';
+import { ConfirmModal } from '../confirm-modal/confirm-modal';
 
 @Component({
   selector: 'app-header-bar',
-  imports: [LucideAngularModule, RouterLink, Button],
+  imports: [LucideAngularModule, RouterLink, Button, ConfirmModal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="h-16 border-b border-line bg-surface">
@@ -25,8 +26,8 @@ import { Button } from '../button/button';
 
         <div class="flex items-center gap-4">
           @if (user(); as u) {
-            <span class="hidden text-sm text-muted sm:inline">{{ u.email }}</span>
-            <app-button variant="secondary" compact (click)="logout()">
+            <span class="hidden text-sm text-muted sm:inline">{{ u.username }}</span>
+            <app-button variant="secondary" compact (click)="askLogout()">
               {{ t('header.logout') }}
             </app-button>
           } @else {
@@ -57,6 +58,17 @@ import { Button } from '../button/button';
         </div>
       </div>
     </header>
+
+    @if (confirmingLogout()) {
+      <app-confirm-modal
+        [title]="t('logout-confirm.title')"
+        [text]="t('logout-confirm.text')"
+        [confirmLabel]="t('logout-confirm.confirm')"
+        [cancelLabel]="t('logout-confirm.cancel')"
+        (confirm)="logout()"
+        (cancel)="confirmingLogout.set(false)"
+      />
+    }
   `,
 })
 export class HeaderBar {
@@ -68,6 +80,7 @@ export class HeaderBar {
   readonly languages = Languages;
   readonly lang = this.langService.lang;
   readonly user = this.session.user;
+  readonly confirmingLogout = signal(false);
 
   t(key: string): string {
     return this.langService.t(key);
@@ -81,7 +94,12 @@ export class HeaderBar {
     this.router.navigate(['/login']);
   }
 
+  askLogout(): void {
+    this.confirmingLogout.set(true);
+  }
+
   logout(): void {
+    this.confirmingLogout.set(false);
     this.authService.logout().subscribe({
       next: () => this.afterLogout(),
       error: (err: { status?: number }) => {

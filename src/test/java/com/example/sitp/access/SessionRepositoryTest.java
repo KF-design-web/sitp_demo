@@ -28,6 +28,9 @@ class SessionRepositoryTest {
     private User newUser(String email) {
         return userRepository.save(User.builder()
                 .email(email)
+                .username(email.substring(0, email.indexOf('@')))
+                .firstName("Ana")
+                .lastName("Example")
                 .passwordHash("hash")
                 .role(Role.TRAINEE)
                 .accountType(AccountType.OUTSIDER)

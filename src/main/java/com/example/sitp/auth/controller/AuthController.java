@@ -1,5 +1,6 @@
 package com.example.sitp.auth.controller;
 
+import com.example.sitp.auth.captcha.CaptchaService;
 import com.example.sitp.auth.dto.AuthResponse;
 import com.example.sitp.auth.dto.LoginRequest;
 import com.example.sitp.auth.dto.RegisterRequest;
@@ -20,15 +21,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final CaptchaService captchaService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, CaptchaService captchaService) {
 
         this.authService = authService;
+        this.captchaService = captchaService;
     }
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -52,6 +57,11 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(auth);
+    }
+
+    @GetMapping(value = "/captcha", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> captcha() {
+        return ResponseEntity.ok(captchaService.toWire(captchaService.issue()));
     }
 
     @GetMapping("/me")

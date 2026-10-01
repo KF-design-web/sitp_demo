@@ -29,7 +29,9 @@ public class SecurityConfig {
             .addFilterBefore(sessionAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/register", "/api/auth/login",
+                    "/api/auth/register", "/api/auth/login", "/api/auth/captcha",
+                    "/api/verification/**",
+                    "/api/captcha",
                     "/api/courses",
                     "/swagger-ui.html", "/swagger-ui/**",
                     "/v3/api-docs/**")

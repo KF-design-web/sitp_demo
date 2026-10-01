@@ -2,7 +2,11 @@ package com.example.sitp.common;
 
 import com.example.sitp.auth.exception.AccountDisabledException;
 import com.example.sitp.auth.exception.EmailAlreadyExistsException;
+import com.example.sitp.auth.exception.InvalidCaptchaException;
 import com.example.sitp.auth.exception.InvalidCredentialsException;
+import com.example.sitp.auth.exception.PasswordMismatchException;
+import com.example.sitp.auth.exception.UsernameAlreadyExistsException;
+import com.example.sitp.verification.exception.VerificationCodeInvalidException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -29,7 +33,31 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Invalid email or password."));
+                .body(ErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Invalid username or password."));
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameAlreadyExists(UsernameAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "This username is already taken."));
+    }
+
+    @ExceptionHandler(PasswordMismatchException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordMismatch(PasswordMismatchException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), "Passwords do not match."));
+    }
+
+    @ExceptionHandler(InvalidCaptchaException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCaptcha(InvalidCaptchaException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), "Captcha check failed. A new question has been issued."));
+    }
+
+    @ExceptionHandler(VerificationCodeInvalidException.class)
+    public ResponseEntity<ErrorResponse> handleVerificationCodeInvalid(VerificationCodeInvalidException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), "Invalid or expired code."));
     }
 
     @ExceptionHandler(AccountDisabledException.class)

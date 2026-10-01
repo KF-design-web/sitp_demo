@@ -4,22 +4,24 @@
 @import "@fontsource/poppins/600.css";
 @import "@fontsource/poppins/700.css";
 
+
 @theme {
-  --color-primary: #C15F3C;
-  --color-primary-dark: #A04E31;
-  --color-primary-soft: #F6E3DA;
-  --color-bg: #F4F3EE;
+  --color-primary: #7C0594;
+  --color-primary-dark: #5E0470;
+  --color-primary-soft: #D0BBD5;
+  --color-accent: #F8AF36;
+  --color-bg: #F7F7F9;
   --color-surface: #FFFFFF;
-  --color-ink: #191919;
-  --color-muted: #6E6B63;
-  --color-line: #DDD9CE;
+  --color-ink: #1A1523;
+  --color-muted: #6E6A78;
+  --color-line: #E6E6E6;
   --color-success: #16A34A;
   --color-error: #DC2626;
   --color-error-soft: #FEF2F2;
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
-  --shadow-card: 0 1px 3px rgba(25, 25, 25, 0.08);
-  --shadow-button: 0 2px 8px rgba(193, 95, 60, 0.28);
-  --shadow-button-hover: 0 4px 14px rgba(193, 95, 60, 0.38);
+  --shadow-card: 0 1px 3px rgba(26, 21, 35, 0.08);
+  --shadow-button: 0 2px 8px rgba(124, 5, 148, 0.28);
+  --shadow-button-hover: 0 4px 14px rgba(124, 5, 148, 0.38);
 }
 
 @layer base {

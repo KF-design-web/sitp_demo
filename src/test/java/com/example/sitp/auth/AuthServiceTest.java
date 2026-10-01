@@ -2,13 +2,17 @@ package com.example.sitp.auth;
 
 import com.example.sitp.access.model.Session;
 import com.example.sitp.access.repository.SessionRepository;
+import com.example.sitp.auth.captcha.CaptchaChallenge;
+import com.example.sitp.auth.captcha.CaptchaService;
 import com.example.sitp.auth.exception.EmailAlreadyExistsException;
 import com.example.sitp.auth.exception.InvalidCredentialsException;
+import com.example.sitp.auth.exception.UsernameAlreadyExistsException;
 import com.example.sitp.auth.service.AuthService;
 import com.example.sitp.auth.dto.LoginRequest;
 import com.example.sitp.auth.dto.RegisterRequest;
 import com.example.sitp.auth.dto.AuthResponse;
 import com.example.sitp.user.model.AccountType;
+import com.example.sitp.user.model.Gender;
 import com.example.sitp.user.model.Role;
 import com.example.sitp.user.model.User;
 import com.example.sitp.user.repository.UserRepository;
@@ -39,12 +43,30 @@ class AuthServiceTest {
     @Autowired
     private SessionRepository sessionRepository;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     private RegisterRequest registerRequest(String email) {
+        String username = email.substring(0, email.indexOf('@'))
+                .replaceAll("[^a-z0-9._-]", "");
+        CaptchaChallenge captcha = captchaService.issue();
         return RegisterRequest.builder()
                 .email(email)
+                .username(username)
+                .firstName("Ana")
+                .lastName("Example")
+                .gender(Gender.FEMALE)
                 .password("password123")
-                .accountType(AccountType.OUTSIDER)
+                .passwordConfirm("password123")
+                .captchaId(String.valueOf(captcha.getId()))
+                .captchaAnswer(answerOf(captcha))
                 .build();
+    }
+
+    private static String answerOf(CaptchaChallenge captcha) {
+        String[] parts = captcha.getQuestion().split(" ");
+        int sum = Integer.parseInt(parts[2]) + Integer.parseInt(parts[4].replace("?", ""));
+        return String.valueOf(sum);
     }
 
     private void deleteAllRows() {
@@ -53,13 +75,16 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_createsATraineeEnabledWithHashedPassword() {
+    void register_createsATrainee_DISABLED_withHashedPassword_andAProfile() {
         deleteAllRows();
 
         UserResponse created = authService.register(registerRequest("ana@mail.com"));
 
         assertThat(created.getRole()).isEqualTo(Role.TRAINEE);
-        assertThat(created.isEnabled()).isTrue();
+        assertThat(created.isEnabled()).isFalse();
+        assertThat(created.getUsername()).isEqualTo("ana");
+        assertThat(created.getFirstName()).isEqualTo("Ana");
+        assertThat(created.getGender()).isEqualTo(Gender.FEMALE);
 
         User stored = userRepository.findByEmail("ana@mail.com").orElseThrow();
         assertThat(stored.getPasswordHash()).isNotEqualTo("password123");
@@ -67,13 +92,15 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_storesEmailLowercase_trimmed() {
+    void register_storesEmailAndUsernameLowercase_trimmed() {
         deleteAllRows();
 
         RegisterRequest messy = registerRequest("  Ana@Mail.COM ");
+        messy.setUsername("  Ana ");
         authService.register(messy);
 
         assertThat(userRepository.existsByEmail("ana@mail.com")).isTrue();
+        assertThat(userRepository.existsByUsername("ana")).isTrue();
     }
 
     @Test
@@ -86,67 +113,114 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_internWithoutTrack_isRejected() {
+    void register_duplicateUsername_throwsUsernameAlreadyExists() {
         deleteAllRows();
-        RegisterRequest intern = RegisterRequest.builder()
-                .email("intern@mail.com")
-                .password("password123")
-                .accountType(AccountType.INTERN)
-                .track(null)
-                .build();
+        authService.register(registerRequest("ana@mail.com"));
 
-        assertThatThrownBy(() -> authService.register(intern))
-                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+        RegisterRequest other = registerRequest("other@mail.com");
+        other.setUsername("ana");
+
+        assertThatThrownBy(() -> authService.register(other))
+                .isInstanceOf(UsernameAlreadyExistsException.class);
     }
 
     @Test
-    void register_internWithTrack_isAccepted() {
+    void register_passwordConfirmMismatch_throws() {
         deleteAllRows();
-        RegisterRequest intern = RegisterRequest.builder()
-                .email("intern2@mail.com")
-                .password("password123")
-                .accountType(AccountType.INTERN)
-                .track(com.example.sitp.user.model.Track.ACADEMIC)
-                .build();
+        RegisterRequest sloppy = registerRequest("ana@mail.com");
+        sloppy.setPasswordConfirm("different123");
 
-        UserResponse created = authService.register(intern);
+        assertThatThrownBy(() -> authService.register(sloppy))
+                .isInstanceOf(com.example.sitp.auth.exception.PasswordMismatchException.class);
+        assertThat(userRepository.existsByEmail("ana@mail.com")).isFalse();
+    }
 
-        assertThat(created.getAccountType()).isEqualTo(AccountType.INTERN);
+    @Test
+    void register_withAConsumedCaptcha_throwsBeforeAnythingElse() {
+        deleteAllRows();
+        RegisterRequest first = registerRequest("ana@mail.com");
+        authService.register(first);
+
+        RegisterRequest second = registerRequest("bob@mail.com");
+        second.setCaptchaId(first.getCaptchaId());
+        second.setCaptchaAnswer(first.getCaptchaAnswer());
+
+        assertThatThrownBy(() -> authService.register(second))
+                .isInstanceOf(com.example.sitp.auth.exception.InvalidCaptchaException.class);
+        assertThat(userRepository.existsByEmail("bob@mail.com")).isFalse();
+    }
+
+    @Test
+    void register_isTypeBlind_everyNewbornIsAnOutsider() {
+        deleteAllRows();
+        UserResponse created = authService.register(registerRequest("blind@mail.com"));
+
+        assertThat(created.getAccountType()).isEqualTo(AccountType.OUTSIDER);
+        assertThat(created.getRole()).isEqualTo(Role.TRAINEE);
+    }
+
+    @Test
+    void register_mixedCaseUsername_acceptedAndStoredLowercase() {
+        deleteAllRows();
+        RegisterRequest request = registerRequest("mixed@mail.com");
+        request.setUsername("Naira.Saint-2026");
+
+        UserResponse created = authService.register(request);
+
+        assertThat(created.getUsername()).isEqualTo("naira.saint-2026");
+        assertThat(userRepository.findByUsername("naira.saint-2026")).isPresent();
+        assertThat(userRepository.findByUsername("Naira.Saint-2026")).isEmpty();
+    }
+
+    @Test
+    void login_byUsername_afterVerificationSurgery() {
+        deleteAllRows();
+        authService.register(registerRequest("ana@mail.com"));
+        enable("ana");
+
+        AuthResponse auth = login("ana");
+
+        assertThat(auth.getUser().getUsername()).isEqualTo("ana");
+        assertThat(auth.getUser().getEmail()).isEqualTo("ana@mail.com");
     }
 
     @Test
     void login_wrongPassword_throwsInvalidCredentials() {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
+        enable("ana");
 
-        LoginRequest wrong = LoginRequest.builder()
-                .email("ana@mail.com")
-                .password("totally-wrong")
-                .build();
+        LoginRequest wrong = loginRequest("ana", "totally-wrong");
 
         assertThatThrownBy(() -> authService.login(wrong))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
     @Test
-    void login_unknownEmail_throwsTheSAMEExceptionAsWrongPassword() {
+    void login_unknownUsername_throwsTheSAMEExceptionAsWrongPassword() {
         deleteAllRows();
-        LoginRequest stranger = LoginRequest.builder()
-                .email("ghost@mail.com")
-                .password("whatever")
-                .build();
+        LoginRequest stranger = loginRequest("ghost", "whatever");
 
         assertThatThrownBy(() -> authService.login(stranger))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
     @Test
-    void login_success_leavesExactlyOneActiveSession() {
+    void login_disabledAccount_stillForbidden() {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
 
-        AuthResponse first = authService.login(LoginRequest.builder()
-                .email("ana@mail.com").password("password123").build());
+        assertThatThrownBy(() -> authService.login(loginRequest("ana", "password123")))
+                .isInstanceOf(com.example.sitp.auth.exception.AccountDisabledException.class);
+    }
+
+    @Test
+    void login_success_leavesExactlyOneActiveSession() {
+        deleteAllRows();
+        authService.register(registerRequest("ana@mail.com"));
+        enable("ana");
+
+        AuthResponse first = login("ana");
 
         var active = sessionRepository.findByTokenAndActiveTrue(first.getToken());
         assertThat(active).isPresent();
@@ -160,15 +234,14 @@ class AuthServiceTest {
     void login_twice_theFirstTokenDies_theSecondWorks() {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
+        enable("ana");
 
-        AuthResponse first = authService.login(LoginRequest.builder()
-                .email("ana@mail.com").password("password123").build());
-        AuthResponse second = authService.login(LoginRequest.builder()
-                .email("ana@mail.com").password("password123").build());
+        AuthResponse first = login("ana");
+        AuthResponse second = login("ana");
 
         assertThat(sessionRepository.findByTokenAndActiveTrue(first.getToken())).isEmpty();
         assertThat(sessionRepository.findByTokenAndActiveTrue(second.getToken())).isPresent();
-        assertThat(second.getUser().getEmail()).isEqualTo("ana@mail.com");
+        assertThat(second.getUser().getUsername()).isEqualTo("ana");
         assertThat(second.getExpiresAt()).isAfter(LocalDateTime.now());
     }
 
@@ -176,8 +249,8 @@ class AuthServiceTest {
     void logout_crossesOutTheRow_butKeepsTheHistory() {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
-        AuthResponse auth = authService.login(LoginRequest.builder()
-                .email("ana@mail.com").password("password123").build());
+        enable("ana");
+        AuthResponse auth = login("ana");
 
         authService.logout(auth.getToken());
 
@@ -186,6 +259,27 @@ class AuthServiceTest {
                 .anyMatch(s -> s.getToken().equals(auth.getToken()));
         assertThat(rowStillExists).isTrue();
         authService.logout(auth.getToken());
+    }
+
+
+    private LoginRequest loginRequest(String username, String password) {
+        CaptchaChallenge captcha = captchaService.issue();
+        return LoginRequest.builder()
+                .username(username)
+                .password(password)
+                .captchaId(String.valueOf(captcha.getId()))
+                .captchaAnswer(answerOf(captcha))
+                .build();
+    }
+
+    private AuthResponse login(String username) {
+        return authService.login(loginRequest(username, "password123"));
+    }
+
+    private void enable(String username) {
+        User u = userRepository.findByUsername(username).orElseThrow();
+        u.setEnabled(true);
+        userRepository.save(u);
     }
 
     private boolean authServiceMatches(String raw, String hash) {

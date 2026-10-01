@@ -29,6 +29,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false, unique = true)
+    private String username;
+
     @Column(nullable = false)
     private String passwordHash;
 
@@ -39,6 +42,19 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountType accountType;
+
+    @Column(nullable = false)
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
+
+    private String phoneNumber;
+    private String address;
+    private String country;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Builder.Default
     private boolean enabled = false;
