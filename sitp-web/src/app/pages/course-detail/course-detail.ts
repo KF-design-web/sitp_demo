@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '../../courses/courses.service';
 import { CourseDetail } from '../../courses/courses.models';
+import { formatXaf } from '../../courses/format-xaf';
 import { ErrorSlip } from '../../ui/error-slip/error-slip';
 import { Button } from '../../ui/button/button';
 import { LangService } from '../../core/lang.service';
@@ -72,7 +73,7 @@ import { LangService } from '../../core/lang.service';
             {{ t('courses.audience-' + course()!.targetAudience) }}
           </span>
           @if (course()!.priceVisible && course()!.price != null) {
-            <span class="text-lg font-bold text-primary">{{ course()!.price }} FCFA</span>
+            <span class="text-lg font-bold text-primary">{{ formatXaf(course()!.price!) }}</span>
           }
         </div>
 
@@ -156,6 +157,8 @@ export class CourseDetailPage {
   backToCourses(): void {
     this.router.navigate(['/courses']);
   }
+
+  readonly formatXaf = formatXaf;
 
   t(key: string): string {
     return this.langService.t(key);
