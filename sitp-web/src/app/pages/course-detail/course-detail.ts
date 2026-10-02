@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CourseService } from '../../courses/courses.service';
 import { CourseDetail } from '../../courses/courses.models';
 import { ErrorSlip } from '../../ui/error-slip/error-slip';
@@ -22,54 +22,86 @@ import { LangService } from '../../core/lang.service';
       @if (course() === null && !notFound() && !error()) {
         <div class="h-10 w-2/3 animate-pulse rounded-xl bg-line"></div>
         <div class="mt-4 h-6 w-1/3 animate-pulse rounded-xl bg-line"></div>
+        <p class="mt-6 text-sm text-muted">{{ t('detail.loading') }}</p>
         <div class="mt-8 space-y-3">
           @for (s of skeletons; track s) {
-            <div class="h-16 animate-pulse rounded-xl bg-line"></div>
+            <div class="flex h-20 items-center gap-4">
+              <div class="h-14 w-24 animate-pulse rounded-xl bg-line"></div>
+              <div class="h-6 flex-1 animate-pulse rounded-xl bg-line"></div>
+            </div>
           }
         </div>
       } @else if (notFound()) {
         <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 text-center shadow-card">
-          <h1 class="text-lg font-semibold text-ink">Course not found</h1>
-          <p class="mt-2 text-sm text-muted">This course does not exist.</p>
+          <h1 class="text-lg font-semibold text-ink">{{ t('detail.not-found-title') }}</h1>
+          <p class="mt-2 text-sm text-muted">{{ t('detail.not-found-text') }}</p>
           <div class="mt-6">
             <app-button variant="secondary" (click)="backToCourses()">
-              Back to courses
+              {{ t('detail.back-to-courses') }}
             </app-button>
           </div>
         </div>
       } @else if (error()) {
-        <app-error-slip [message]="t('error.unreachable')" />
+        <h2 class="text-lg font-semibold text-ink">{{ t('detail.error-title') }}</h2>
+        <div class="mt-6">
+          <app-error-slip [message]="t('error.unreachable')" />
+        </div>
         <div class="mt-4 max-w-xs">
           <app-button variant="secondary" (click)="load()">
-            Try again
+            {{ t('detail.retry') }}
           </app-button>
         </div>
       } @else if (course() !== null) {
-        <h1 class="text-[28px] font-bold text-ink">{{ course()!.title }}</h1>
-        <p class="mt-2 text-base text-muted">{{ course()!.description }}</p>
-        <div class="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          (click)="backToCourses()"
+          class="text-sm font-medium text-muted hover:text-ink hover:underline focus:outline-none"
+        >
+          ← {{ t('detail.back-to-courses') }}
+        </button>
+
+        <h1 class="mt-4 text-[28px] font-bold text-ink">{{ course()!.title }}</h1>
+        <p class="mt-2 whitespace-pre-line text-base text-muted">{{ course()!.description }}</p>
+        <div class="mt-4 flex flex-wrap items-center gap-3">
           <span
             class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium"
             [class]="course()!.targetAudience === 'INTERN'
               ? 'border-primary bg-primary-soft text-primary'
               : 'border-line bg-bg text-muted'"
           >
-            {{ course()!.targetAudience }}
+            {{ t('courses.audience-' + course()!.targetAudience) }}
           </span>
           @if (course()!.priceVisible && course()!.price != null) {
             <span class="text-lg font-bold text-primary">{{ course()!.price }} FCFA</span>
           }
         </div>
 
-        <h2 class="mt-10 text-xl font-semibold text-ink">Chapters</h2>
+        <h2 class="mt-10 text-xl font-semibold text-ink">{{ t('detail.chapters-heading') }}</h2>
         <ol class="mt-4 space-y-3">
           @for (chapter of course()!.chapters; track chapter.id) {
             <li class="flex items-center gap-4 rounded-xl border border-line bg-surface p-4 shadow-card">
               <span class="w-8 text-center text-lg font-bold text-primary">{{ chapter.position }}</span>
-              <span class="flex-1 font-medium text-ink">{{ chapter.title }}</span>
+              <div class="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-primary-soft to-line">
+                <img
+                  [src]="thumbnailUrl(chapter.id)"
+                  [alt]="chapter.title"
+                  class="h-full w-full object-cover"
+                  (error)="failThumbnail(chapter.id)"
+                  [hidden]="thumbFailed().has(chapter.id)"
+                />
+                @if (thumbFailed().has(chapter.id)) {
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" class="h-6 w-6 text-primary" fill="currentColor" aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                }
+              </div>
+              <span class="flex-1 font-medium text-ink">{{ chapter.title || t('detail.chapter-fallback-title') }}</span>
             </li>
           }
         </ol>
+        <p class="mt-4 text-sm text-muted">{{ t('detail.video-coming-soon') }}</p>
       }
     </section>
   `,
@@ -78,12 +110,23 @@ export class CourseDetailPage {
   private courseService = inject(CourseService);
   private langService = inject(LangService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   readonly course = signal<CourseDetail | null>(null);
   readonly notFound = signal(false);
   readonly error = signal(false);
 
   readonly skeletons = [1, 2, 3, 4];
+
+  thumbnailUrl(chapterId: number): string {
+    return `https://picsum.photos/seed/sitp-chapter-${chapterId}/240/135`;
+  }
+
+  readonly thumbFailed = signal<Set<number>>(new Set());
+
+  failThumbnail(chapterId: number): void {
+    this.thumbFailed.update((current) => new Set(current).add(chapterId));
+  }
 
   private readonly courseId = computed(() =>
     Number(this.route.snapshot.paramMap.get('id')),
@@ -111,7 +154,7 @@ export class CourseDetailPage {
   }
 
   backToCourses(): void {
-    window.history.back();
+    this.router.navigate(['/courses']);
   }
 
   t(key: string): string {
