@@ -26,6 +26,10 @@ import { CaptchaField } from '../../ui/captcha-field/captcha-field';
         <p class="mt-4 text-sm font-medium text-success">{{ t('verify.success-then-login') }}</p>
       }
 
+      @if (walkedFromDetail()) {
+        <p class="mt-4 text-sm font-medium text-primary">{{ t('detail.login-notice') }}</p>
+      }
+
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-6 flex flex-col gap-4">
         <app-text-field
           formControlName="username"
@@ -76,6 +80,7 @@ export class LoginPage {
   readonly errorMessage = signal('');
   readonly captchaInvalid = signal(false);
   readonly verifiedNow = signal(false);
+  readonly walkedFromDetail = signal(false);
 
   captchaPair: { id: string; answer: string } = { id: '', answer: '' };
 
@@ -83,6 +88,9 @@ export class LoginPage {
     this.route.queryParamMap.subscribe((q) => {
       if (q.get('verified')) {
         this.verifiedNow.set(true);
+      }
+      if (q.get('from') === 'detail') {
+        this.walkedFromDetail.set(true);
       }
     });
   }

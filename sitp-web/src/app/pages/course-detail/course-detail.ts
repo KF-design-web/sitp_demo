@@ -147,6 +147,8 @@ export class CourseDetailPage {
       error: (err: { status?: number }) => {
         if (err?.status === 404) {
           this.notFound.set(true);
+        } else if (err?.status === 401) {
+          this.router.navigate(['/login'], { queryParams: { from: 'detail' } });
         } else {
           this.error.set(true);
         }
