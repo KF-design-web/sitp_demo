@@ -61,8 +61,8 @@ import { LangService } from '../../core/lang.service';
           ← {{ t('detail.back-to-courses') }}
         </button>
 
-        <h1 class="mt-4 text-[28px] font-bold text-ink">{{ course()!.title }}</h1>
-        <p class="mt-2 whitespace-pre-line text-base text-muted">{{ course()!.description }}</p>
+        <h1 class="mt-4 text-[28px] font-bold text-ink">{{ tText(course()!.title) }}</h1>
+        <p class="mt-2 whitespace-pre-line text-base text-muted">{{ tText(course()!.description) }}</p>
         <div class="mt-4 flex flex-wrap items-center gap-3">
           <span
             class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium"
@@ -85,7 +85,7 @@ import { LangService } from '../../core/lang.service';
               <div class="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-primary-soft to-line">
                 <img
                   [src]="thumbnailUrl(chapter.id)"
-                  [alt]="chapter.title"
+                  [alt]="tText(chapter.title)"
                   class="h-full w-full object-cover"
                   (error)="failThumbnail(chapter.id)"
                   [hidden]="thumbFailed().has(chapter.id)"
@@ -98,7 +98,7 @@ import { LangService } from '../../core/lang.service';
                   </div>
                 }
               </div>
-              <span class="flex-1 font-medium text-ink">{{ chapter.title || t('detail.chapter-fallback-title') }}</span>
+              <span class="flex-1 font-medium text-ink">{{ tText(chapter.title) || t('detail.chapter-fallback-title') }}</span>
             </li>
           }
         </ol>
@@ -164,5 +164,9 @@ export class CourseDetailPage {
 
   t(key: string): string {
     return this.langService.t(key);
+  }
+
+  tText(en: string): string {
+    return this.langService.tText(en);
   }
 }

@@ -159,3 +159,44 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   },
   'courses.retry': { en: 'Try again', fr: 'Réessayer' },
 };
+
+export const contentFr: Record<string, string> = {
+  'Git Foundations': 'Fondations de Git',
+  'Graphic Design Fundamentals': 'Fondamentaux du design graphique',
+  'Port Logistics & Freight Operations': 'Logistique portuaire et opérations de fret',
+  "HR Essentials for the Port Workforce": "Essentiels RH pour la main-d'œuvre portuaire",
+  'Freight Documentation & Customs English': 'Documentation de fret et anglais douanier',
+  'Workplace Communication (EN/FR)': 'Communication professionnelle (EN/FR)',
+
+  'Branches without fear. From your first commit to confident collaboration, hands-on, chapter by chapter.':
+    'Les branches sans peur. De votre premier commit à une collaboration sereine, pratique, chapitre après chapitre.',
+  'Color, type, and layout that speak. Build posters, flyers, and social visuals from a blank page to a print-ready file.':
+    'La couleur, la typographie et la mise en page qui parlent. Créez affiches, flyers et visuels sociaux, de la page blanche au fichier prêt à imprimer.',
+  'Douala port to final mile: how containers really move. Terminals, bills of lading, customs walks, and the paperwork that keeps freight legal.':
+    'Du port de Douala au dernier kilomètre : comment les conteneurs voyagent vraiment. Terminaux, connaissements, circuits douaniers et papiers qui gardent le fret légal.',
+  'Contracts, shifts, and the labour code that governs the docks. Hire, schedule, and stay legal — the People side of freight.':
+    'Contrats, horaires et code du travail qui régissent les quais. Recrutez, planifiez et restez légal — le volet humain du fret.',
+  'The words that move cargo. Write bills of lading, packing lists, and customs declarations in clear, correct shipping English.':
+    'Les mots qui font voyager la marchandise. Rédigez connaissements, listes de colisage et déclarations douanières dans un anglais maritime clair et correct.',
+  'Write emails, briefs, and shift reports that land — in English and in French. Fewer misunderstandings, faster handovers.':
+    'Rédigez des e-mails, des notes et des rapports de relève qui passent — en anglais et en français. Moins de malentendus, des relèves plus rapides.',
+
+  'What is version control (and why the port cares)': "Qu'est-ce que le contrôle de versions (et pourquoi ça compte au port)",
+  'Your first commit: save a checkpoint you can return to': 'Votre premier commit : enregistrer un point de retour',
+  'Branches and merges: parallel worlds that reunite': 'Branches et fusions : des mondes parallèles qui se rejoignent',
+  'Seeing like a designer: space, contrast, hierarchy': 'Voir comme un designer : espace, contraste, hiérarchie',
+  'Color and type: pairs that always work': 'Couleur et typographie : des duos qui marchent toujours',
+  'From blank page to print-ready poster': "De la page blanche à l'affiche prête à imprimer",
+  'The container journey: booking to terminal': 'Le voyage du conteneur : de la réservation au terminal',
+  'Bills of lading and the documents that rule freight': 'Le connaissement et les documents qui régissent le fret',
+  'Customs walks: declaration to release': 'Le parcours douanier : de la déclaration à la décharge',
+  'Contracts and categories: who works what': 'Contrats et catégories : qui fait quoi',
+  'Shifts, safety, and the labour code basics': 'Horaires, sécurité et bases du code du travail',
+  'Hiring fair: interviews that find keepers': 'Recruter juste : des entretiens qui trouvent les bons profils',
+  'The shipping vocabulary you must own': 'Le vocabulaire du fret à maîtriser',
+  'Writing a clean bill of lading': 'Rédiger un connaissement sans faute',
+  'Customs declarations without the fear': 'Les déclarations douanières sans crainte',
+  'Emails that get answered (EN/FR)': "Des e-mails auxquels on répond (EN/FR)",
+  'Shift handover reports that prevent mistakes': 'Les rapports de relève qui évitent les erreurs',
+  'Briefing a team: short, clear, bilingual': "Briefer son équipe : court, clair, bilingue",
+};

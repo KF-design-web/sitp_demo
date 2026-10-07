@@ -76,7 +76,7 @@ class CourseControllerDetailTest {
         String id = body.replaceAll(".*\"id\":(\\d+).*", "$1").trim();
         var challenge = captchaChallengeRepository.findById(Long.parseLong(id)).orElseThrow();
         String[] parts = challenge.getQuestion().split(" ");
-        String answer = String.valueOf(Integer.parseInt(parts[2]) + Integer.parseInt(parts[4].replace("?", "")));
+        String answer = String.valueOf(Integer.parseInt(parts[0]) + Integer.parseInt(parts[2]));
         return new String[]{id, answer};
     }
 

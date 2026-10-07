@@ -65,7 +65,7 @@ class AuthServiceTest {
 
     private static String answerOf(CaptchaChallenge captcha) {
         String[] parts = captcha.getQuestion().split(" ");
-        int sum = Integer.parseInt(parts[2]) + Integer.parseInt(parts[4].replace("?", ""));
+        int sum = Integer.parseInt(parts[0]) + Integer.parseInt(parts[2]);
         return String.valueOf(sum);
     }
 

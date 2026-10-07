@@ -20,7 +20,7 @@ import { LangService } from '../../core/lang.service';
       <span class="text-sm font-medium text-ink">{{ t('login.captcha') }}</span>
       <div class="flex items-center gap-2">
         <span
-          class="flex-1 select-none rounded-xl border border-line bg-bg px-3 py-3 text-base font-semibold tracking-wide text-ink"
+          class="flex-1 select-none rounded-xl border border-line bg-bg px-3 py-2 text-sm font-semibold text-ink"
         >
           {{ challenge()?.question ?? '…' }}
         </span>
@@ -30,7 +30,7 @@ import { LangService } from '../../core/lang.service';
           [placeholder]="t('register.captcha-placeholder')"
           [value]="answer()"
           (input)="onAnswer($event)"
-          class="w-28 rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+          class="w-36 rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"
           [class.border-error]="invalid()"
           [attr.aria-invalid]="invalid() ? true : null"
         />

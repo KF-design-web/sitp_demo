@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, GraduationCap, Briefcase, Play } from 'lucide-angular';
-import { CourseSummary } from '../../courses/courses.models';
+import { CourseSummary, courseThumbnailUrl } from '../../courses/courses.models';
 import { Button } from '../button/button';
 import { LangService } from '../../core/lang.service';
 
@@ -23,8 +23,8 @@ import { LangService } from '../../core/lang.service';
     >
       @if (!thumbFailed()) {
         <img
-          [src]="'https://picsum.photos/seed/sitp-course-' + course().id + '/640/360'"
-          [alt]="course().title"
+          [src]="courseThumbnailUrl(course().id, course().title)"
+          [alt]="tText(course().title)"
           class="aspect-video w-full object-cover"
           (error)="thumbFailed.set(true)"
         />
@@ -35,9 +35,9 @@ import { LangService } from '../../core/lang.service';
       }
 
       <div class="flex flex-1 flex-col gap-3 p-6">
-        <h3 class="text-lg font-semibold text-ink">{{ course().title }}</h3>
+        <h3 class="text-lg font-semibold text-ink">{{ tText(course().title) }}</h3>
 
-        <p class="whitespace-pre-line text-sm text-muted">{{ course().description }}</p>
+        <p class="whitespace-pre-line text-sm text-muted">{{ tText(course().description) }}</p>
 
         <span
           class="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-0.5 text-xs font-medium"
@@ -58,6 +58,8 @@ import { LangService } from '../../core/lang.service';
 })
 export class CourseCard {
   private langService = inject(LangService);
+
+  readonly courseThumbnailUrl = courseThumbnailUrl;
 
   readonly course = input.required<CourseSummary>();
 
@@ -81,5 +83,9 @@ export class CourseCard {
 
   t(key: string): string {
     return this.langService.t(key);
+  }
+
+  tText(en: string): string {
+    return this.langService.tText(en);
   }
 }

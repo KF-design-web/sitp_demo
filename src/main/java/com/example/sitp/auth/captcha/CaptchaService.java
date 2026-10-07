@@ -28,7 +28,7 @@ public class CaptchaService {
         int a = RANDOM.nextInt(2, 10);
         int b = RANDOM.nextInt(2, 10);
         CaptchaChallenge challenge = CaptchaChallenge.builder()
-                .question("What is " + a + " + " + b + "?")
+                .question(a + " + " + b + " = ?")
                 .answerHash(passwordEncoder.encode(String.valueOf(a + b)))
                 .expiresAt(LocalDateTime.now().plus(CHALLENGE_LIFETIME))
                 .build();

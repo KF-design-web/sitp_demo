@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { i18n, Lang, LANG_STORAGE_KEY } from './i18n';
+import { contentFr, i18n, Lang, LANG_STORAGE_KEY } from './i18n';
 
 @Injectable({ providedIn: 'root' })
 export class LangService {
@@ -19,5 +19,12 @@ export class LangService {
       return key;
     }
     return entry[this.lang()] ?? entry['en'] ?? key;
+  }
+
+  tText(en: string): string {
+    if (!en || this.lang() === 'en') {
+      return en;
+    }
+    return contentFr[en] ?? en;
   }
 }
