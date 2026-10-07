@@ -102,6 +102,11 @@ async function main() {
   say(leg1 ? 'LEG1-BOARD: PASS (6 cards, 2x3, 6/6 topical photos loaded)' : 'LEG1-BOARD: FAIL');
 
   await nav(c, `${BASE}/login`);
+  for (let i = 0; i < 30; i++) {
+    const filled = await evalJs(c, `(() => { const chip = [...document.querySelectorAll('span')].find((s) => /\d+\s*[+\-x*]\s*\d+/.test(s.textContent) && s.textContent.length < 20); return Boolean(chip); })()`);
+    if (filled) break;
+    await sleep(500);
+  }
   const capRaw = await evalJs(c, `(() => {
     const chip = [...document.querySelectorAll('span')].find(s => /\\d+\\s*[+\\-x*]\\s*\\d+/.test(s.textContent) && s.textContent.length < 20);
     return JSON.stringify({
