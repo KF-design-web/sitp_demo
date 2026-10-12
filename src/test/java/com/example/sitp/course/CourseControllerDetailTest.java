@@ -1,5 +1,8 @@
 package com.example.sitp.course;
 
+import com.example.sitp.access.model.RedeemableCode;
+import com.example.sitp.access.model.RedeemableCodeStatus;
+import com.example.sitp.access.repository.RedeemableCodeRepository;
 import com.example.sitp.access.repository.SessionRepository;
 import com.example.sitp.auth.captcha.CaptchaChallengeRepository;
 import com.example.sitp.course.model.Audience;
@@ -46,7 +49,11 @@ class CourseControllerDetailTest {
     @Autowired
     private CaptchaChallengeRepository captchaChallengeRepository;
 
+    @Autowired
+    private RedeemableCodeRepository redeemableCodeRepository;
+
     private void cleanTables() {
+        redeemableCodeRepository.deleteAll();
         sessionRepository.deleteAll();
         userRepository.deleteAll();
         captchaChallengeRepository.deleteAll();
@@ -117,6 +124,16 @@ class CourseControllerDetailTest {
         return new jakarta.servlet.http.Cookie(nameAndValue[0], nameAndValue[1]);
     }
 
+    private void grantAnaAnActiveCode(Course course) {
+        var ana = userRepository.findByUsername("ana").orElseThrow();
+        redeemableCodeRepository.save(RedeemableCode.builder()
+                .code("GIT-TEST0001")
+                .course(course)
+                .claimant(ana)
+                .status(RedeemableCodeStatus.ACTIVE)
+                .build());
+    }
+
     @Test
     void anonymousKnock_earnsTheBuildingsLock_401() throws Exception {
         cleanTables();
@@ -140,8 +157,10 @@ class CourseControllerDetailTest {
     @Test
     void loggedInMember_realCourse_200WithChaptersInTeachingOrder() throws Exception {
         cleanTables();
-        Long id = seededCourse().getId();
+        Course course = seededCourse();
+        Long id = course.getId();
         registerAna();
+        grantAnaAnActiveCode(course);
         jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
 
         mockMvc.perform(get("/api/courses/" + id).cookie(cookie))
@@ -158,14 +177,28 @@ class CourseControllerDetailTest {
     }
 
     @Test
-    void anyLoggedInMember_opensAnyCourse_theStubCostPinnedLoudly() throws Exception {
+    void codeHolder_opensTheCourse_200WithChapters() throws Exception {
+        cleanTables();
+        Course course = seededCourse();
+        registerAna();
+        grantAnaAnActiveCode(course);
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + course.getId()).cookie(cookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.chapters", hasSize(2)));
+    }
+
+    @Test
+    void loggedInOutsider_withoutAnyCode_earnsTheHonest403() throws Exception {
         cleanTables();
         Long id = seededCourse().getId();
         registerAna();
         jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
 
         mockMvc.perform(get("/api/courses/" + id).cookie(cookie))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.chapters", hasSize(2)));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Access denied."));
     }
 }

@@ -22,6 +22,14 @@ import { ConfirmModal } from '../confirm-modal/confirm-modal';
           >
             {{ t('header.courses') }}
           </a>
+          @if (isCodeManager()) {
+            <a
+              routerLink="/codes"
+              class="text-sm font-medium text-muted transition-colors hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {{ t('header.codes') }}
+            </a>
+          }
         </div>
 
         <div class="flex items-center gap-4">
@@ -84,6 +92,11 @@ export class HeaderBar {
 
   t(key: string): string {
     return this.langService.t(key);
+  }
+
+  isCodeManager(): boolean {
+    const u = this.user();
+    return u !== null && (u.role === 'BOSS' || u.role === 'ADMIN_ASSISTANT');
   }
 
   setLang(l: 'en' | 'fr'): void {

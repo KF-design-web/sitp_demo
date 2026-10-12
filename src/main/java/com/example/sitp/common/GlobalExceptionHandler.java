@@ -1,5 +1,8 @@
 package com.example.sitp.common;
 
+import com.example.sitp.access.exception.CodeAlreadyUsedException;
+import com.example.sitp.access.exception.CodeNotFoundException;
+import com.example.sitp.access.exception.CodeRevokedException;
 import com.example.sitp.auth.exception.AccountDisabledException;
 import com.example.sitp.auth.exception.EmailAlreadyExistsException;
 import com.example.sitp.auth.exception.InvalidCaptchaException;
@@ -68,6 +71,30 @@ public class GlobalExceptionHandler {
                         "Course not found."));
     }
 
+    @ExceptionHandler(CodeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCodeNotFound(CodeNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "Invalid or expired code."));
+    }
+
+    @ExceptionHandler(CodeAlreadyUsedException.class)
+    public ResponseEntity<ErrorResponse> handleCodeAlreadyUsed(CodeAlreadyUsedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "Invalid or expired code."));
+    }
+
+    @ExceptionHandler(CodeRevokedException.class)
+    public ResponseEntity<ErrorResponse> handleCodeRevoked(CodeRevokedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "This code was revoked."));
+    }
+
+    @ExceptionHandler(NoAccessGrantedException.class)
+    public ResponseEntity<ErrorResponse> handleNoAccessGranted(NoAccessGrantedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of(HttpStatus.FORBIDDEN.value(), "Access denied."));
+    }
+
     @ExceptionHandler(AccountDisabledException.class)
     public ResponseEntity<ErrorResponse> handleAccountDisabled(AccountDisabledException future) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -93,6 +120,13 @@ public class GlobalExceptionHandler {
                 + (expected.isEmpty() ? "." : ". This endpoint expects: " + expected + ".");
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(ErrorResponse.of(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(), message));
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(org.springframework.web.bind.MissingServletRequestParameterException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(),
+                        "Missing required parameter: " + ex.getParameterName() + "."));
     }
 
     @ExceptionHandler(ResponseStatusException.class)

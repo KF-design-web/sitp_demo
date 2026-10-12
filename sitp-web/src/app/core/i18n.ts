@@ -86,6 +86,7 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'header.login': { en: 'Log in', fr: 'Connexion' },
   'header.logout': { en: 'Log out', fr: 'Déconnexion' },
   'header.courses': { en: 'Courses', fr: 'Cours' },
+  'header.codes': { en: 'Codes', fr: 'Codes' },
   'error.unreachable': { en: 'Cannot reach the server.', fr: 'Impossible de joindre le serveur.' },
   'error.fallback': { en: 'Something went wrong.', fr: 'Une erreur est survenue.' },
   'error.401-login': {
@@ -158,6 +159,64 @@ export const i18n: Record<string, { en: string; fr: string }> = {
     fr: "Le tableau d'affichage est vide — revenez bientôt.",
   },
   'courses.retry': { en: 'Try again', fr: 'Réessayer' },
+
+  'codes.create-heading': { en: 'Create codes', fr: 'Créer des codes' },
+  'codes.create-subtitle': {
+    en: 'Generate redeemable codes for a course. One code unlocks the course for exactly one person.',
+    fr: 'Générez des codes échangeables pour un cours. Un code ouvre le cours à une seule personne.',
+  },
+  'codes.create-course-label': { en: 'Course', fr: 'Cours' },
+  'codes.create-course-placeholder': { en: 'Choose a course', fr: 'Choisissez un cours' },
+  'codes.create-course-required': { en: 'Choose a course first.', fr: "Choisissez d'abord un cours." },
+  'codes.create-course-missing': { en: 'Course not found.', fr: 'Cours introuvable.' },
+  'codes.create-count-label': { en: 'How many codes', fr: 'Nombre de codes' },
+  'codes.create-count-hint': { en: 'Between 1 and 500.', fr: 'Entre 1 et 500.' },
+  'codes.create-count-bounds': { en: 'Count must be between 1 and 500.', fr: 'Le nombre doit être entre 1 et 500.' },
+  'codes.create-submit': { en: 'Create the codes', fr: 'Créer les codes' },
+  'codes.create-loading': { en: 'Creating…', fr: 'Création…' },
+  'codes.created-heading': { en: 'Fresh codes', fr: 'Codes fraîchement créés' },
+  'codes.created-count-suffix': { en: 'created', fr: 'créés' },
+  'codes.copy': { en: 'Copy', fr: 'Copier' },
+  'codes.copied': { en: 'Copied', fr: 'Copié' },
+  'codes.created-see-all': {
+    en: 'See every code for a course →',
+    fr: 'Voir tous les codes d\u2019un cours →',
+  },
+
+  'codes.list-heading': { en: 'Codes', fr: 'Codes' },
+  'codes.list-subtitle': {
+    en: 'Every code for a course — status, claimant, creation date.',
+    fr: "Tous les codes d'un cours — statut, titulaire, date de création.",
+  },
+  'codes.list-loading': { en: 'Loading…', fr: 'Chargement…' },
+  'codes.list-table-heading': { en: 'All codes for this course', fr: 'Tous les codes de ce cours' },
+  'codes.list-empty': {
+    en: 'No codes created for this course yet.',
+    fr: "Aucun code n'a encore été créé pour ce cours.",
+  },
+  'codes.list-col-code': { en: 'Code', fr: 'Code' },
+  'codes.list-col-status': { en: 'Status', fr: 'Statut' },
+  'codes.list-col-claimed': { en: 'Claimed by', fr: 'Réclamé par' },
+  'codes.list-col-created': { en: 'Created', fr: 'Créé le' },
+  'codes.list-status-ACTIVE': { en: 'Active', fr: 'Actif' },
+  'codes.list-status-REVOKED': { en: 'Revoked', fr: 'Révoqué' },
+  'codes.list-unclaimed': { en: 'Nobody yet', fr: 'Personne pour le moment' },
+
+  'codes.locked-title': { en: 'This course is locked', fr: "Ce cours est verrouillé" },
+  'codes.locked-text': {
+    en: 'You need a code to open this course. Enter yours below.',
+    fr: "Il vous faut un code pour ouvrir ce cours. Saisissez le vôtre ci-dessous.",
+  },
+  'codes.redeem-label': { en: 'Your code', fr: 'Votre code' },
+  'codes.redeem-placeholder': { en: 'e.g. GIT-4F7K29QX', fr: 'ex. GIT-4F7K29QX' },
+  'codes.redeem-submit': { en: 'Unlock the course', fr: 'Déverrouiller le cours' },
+  'codes.redeem-loading': { en: 'Checking…', fr: 'Vérification…' },
+  'codes.redeem-required': { en: 'Enter your code first.', fr: "Saisissez d'abord votre code." },
+  'codes.redeemed-title': { en: 'The course is yours', fr: 'Le cours est à vous' },
+  'codes.redeemed-text': { en: 'Your code was accepted for', fr: 'Votre code a été accepté pour' },
+  'codes.redeemed-open': { en: 'Open the course', fr: 'Ouvrir le cours' },
+
+  'error.403-access': { en: 'Access denied.', fr: 'Accès refusé.' },
 };
 
 export const contentFr: Record<string, string> = {

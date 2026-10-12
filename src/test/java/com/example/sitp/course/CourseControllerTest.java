@@ -43,7 +43,11 @@ class CourseControllerTest {
     @Autowired
     private com.example.sitp.user.repository.UserRepository userRepository;
 
+    @Autowired
+    private com.example.sitp.access.repository.RedeemableCodeRepository redeemableCodeRepository;
+
     private void cleanTables() {
+        redeemableCodeRepository.deleteAll();
         sessionRepository.deleteAll();
         userRepository.deleteAll();
         captchaChallengeRepository.deleteAll();
