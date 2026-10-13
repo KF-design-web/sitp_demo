@@ -134,6 +134,16 @@ class CourseControllerDetailTest {
                 .build());
     }
 
+    private void grantAnaASecondActiveCodeForTheSameCourse(Course course) {
+        var ana = userRepository.findByUsername("ana").orElseThrow();
+        redeemableCodeRepository.save(RedeemableCode.builder()
+                .code("GIT-TEST0002")
+                .course(course)
+                .claimant(ana)
+                .status(RedeemableCodeStatus.ACTIVE)
+                .build());
+    }
+
     @Test
     void anonymousKnock_earnsTheBuildingsLock_401() throws Exception {
         cleanTables();
@@ -200,5 +210,19 @@ class CourseControllerDetailTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status").value(403))
                 .andExpect(jsonPath("$.message").value("Access denied."));
+    }
+
+    @Test
+    void holderWithTwoActiveCodesForOneCourse_stillOpensTheCourse_200NotServerError() throws Exception {
+        cleanTables();
+        Course course = seededCourse();
+        registerAna();
+        grantAnaAnActiveCode(course);
+        grantAnaASecondActiveCodeForTheSameCourse(course);
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + course.getId()).cookie(cookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.chapters", hasSize(2)));
     }
 }

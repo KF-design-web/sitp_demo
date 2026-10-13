@@ -18,7 +18,6 @@ public class CourseAccessGuard {
             return false;
         }
         return redeemableCodeRepository
-                .findByClaimantIdAndCourseIdAndStatus(userId, courseId, RedeemableCodeStatus.ACTIVE)
-                .isPresent();
+                .existsByClaimantIdAndCourseIdAndStatus(userId, courseId, RedeemableCodeStatus.ACTIVE);
     }
 }

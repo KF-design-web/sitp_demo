@@ -144,6 +144,10 @@ export class ForgotPasswordPage {
     return this.langService.t(key);
   }
 
+  tApiError(msg?: string): string {
+    return this.langService.tApiError(msg);
+  }
+
   onAsk(): void {
     this.errorMessage.set('');
     if (this.askForm.invalid) {
@@ -190,7 +194,7 @@ export class ForgotPasswordPage {
         } else if (err?.status === 0) {
           this.errorMessage.set(this.t('error.unreachable'));
         } else {
-          this.errorMessage.set(err.error?.message ?? this.t('error.fallback'));
+          this.errorMessage.set(this.tApiError(err.error?.message));
         }
       },
     });

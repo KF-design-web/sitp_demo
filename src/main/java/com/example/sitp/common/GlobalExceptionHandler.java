@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CodeAlreadyUsedException.class)
     public ResponseEntity<ErrorResponse> handleCodeAlreadyUsed(CodeAlreadyUsedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "Invalid or expired code."));
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "This code has already been used."));
     }
 
     @ExceptionHandler(CodeRevokedException.class)

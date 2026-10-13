@@ -111,6 +111,26 @@ export const i18n: Record<string, { en: string; fr: string }> = {
     en: 'Invalid or expired code.',
     fr: 'Code invalide ou expiré.',
   },
+  'error.api.code-used': {
+    en: 'This code has already been used.',
+    fr: 'Ce code a déjà été utilisé.',
+  },
+  'error.api.code-revoked': { en: 'This code was revoked.', fr: 'Ce code a été révoqué.' },
+  'error.api.access-denied': { en: 'Access denied.', fr: 'Accès refusé.' },
+  'error.api.course-not-found': { en: 'Course not found.', fr: 'Cours introuvable.' },
+  'error.api.count-bounds': {
+    en: 'Count must be between 1 and 500.',
+    fr: 'Le nombre doit être compris entre 1 et 500.',
+  },
+  'error.api.not-authenticated': { en: 'Not authenticated.', fr: 'Non authentifié.' },
+  'error.api.unexpected': {
+    en: 'Unexpected server error.',
+    fr: 'Erreur inattendue du serveur.',
+  },
+  'error.api.missing-param': {
+    en: 'Missing required parameter: ${param}.',
+    fr: 'Paramètre obligatoire manquant : ${param}.',
+  },
   'forgot.heading': { en: 'Forgot your password?', fr: 'Mot de passe oublié ?' },
   'forgot.text': {
     en: 'Enter your account email — we send a 6-digit code and a link back here.',

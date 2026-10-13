@@ -112,6 +112,10 @@ export class LoginPage {
     return this.langService.t(key);
   }
 
+  tApiError(msg?: string): string {
+    return this.langService.tApiError(msg);
+  }
+
   onCaptcha(pair: { id: string; answer: string }): void {
     this.captchaPair = pair;
   }
@@ -154,7 +158,7 @@ export class LoginPage {
             this.captchaInvalid.set(true);
             this.captchaField().refresh();
           } else {
-            this.errorMessage.set(msg || this.t('error.fallback'));
+            this.errorMessage.set(msg ? this.tApiError(msg) : this.t('error.fallback'));
           }
         } else if (err?.status === 0) {
           this.errorMessage.set(this.t('error.unreachable'));

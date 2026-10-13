@@ -54,6 +54,25 @@ import { LangService } from '../../core/lang.service';
             {{ t('detail.retry') }}
           </app-button>
         </div>
+      } @else if (confirmation() !== null) {
+        <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 text-center shadow-card">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft">
+            <svg viewBox="0 0 24 24" class="h-6 w-6 text-primary" fill="currentColor" aria-hidden="true">
+              <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l8.1-8.1 1.4 1.4z" />
+            </svg>
+          </div>
+          <h1 class="mt-4 text-lg font-semibold text-ink">{{ t('codes.redeemed-title') }}</h1>
+          <p class="mt-2 text-sm text-muted">
+            {{ t('codes.redeemed-text') }}
+            <span class="font-semibold text-ink">{{ tText(confirmation()!.courseTitle) }}</span>
+          </p>
+          <p class="mt-1 text-sm text-muted">{{ confirmation()!.accessUntil }}</p>
+          <div class="mt-6">
+            <app-button (click)="openTheCourse()">
+              {{ t('codes.redeemed-open') }}
+            </app-button>
+          </div>
+        </div>
       } @else if (locked()) {
         <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 shadow-card">
           <h1 class="text-lg font-semibold text-ink">{{ t('codes.locked-title') }}</h1>
@@ -89,25 +108,6 @@ import { LangService } from '../../core/lang.service';
           <div class="mt-6">
             <app-button variant="secondary" (click)="backToCourses()">
               {{ t('detail.back-to-courses') }}
-            </app-button>
-          </div>
-        </div>
-      } @else if (confirmation() !== null) {
-        <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 text-center shadow-card">
-          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft">
-            <svg viewBox="0 0 24 24" class="h-6 w-6 text-primary" fill="currentColor" aria-hidden="true">
-              <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l8.1-8.1 1.4 1.4z" />
-            </svg>
-          </div>
-          <h1 class="mt-4 text-lg font-semibold text-ink">{{ t('codes.redeemed-title') }}</h1>
-          <p class="mt-2 text-sm text-muted">
-            {{ t('codes.redeemed-text') }}
-            <span class="font-semibold text-ink">{{ tText(confirmation()!.courseTitle) }}</span>
-          </p>
-          <p class="mt-1 text-sm text-muted">{{ confirmation()!.accessUntil }}</p>
-          <div class="mt-6">
-            <app-button (click)="openTheCourse()">
-              {{ t('codes.redeemed-open') }}
             </app-button>
           </div>
         </div>
@@ -240,13 +240,17 @@ export class CourseDetailPage {
     this.codesService.redeem(code).subscribe({
       next: (card) => {
         this.redeeming.set(false);
+        this.locked.set(false);
+        this.error.set(false);
+        this.notFound.set(false);
         this.confirmation.set(card);
       },
       error: (err: { status?: number; error?: { message?: string } }) => {
         this.redeeming.set(false);
+        const apiMsg = err?.error?.message;
         this.redeemError.set(
           err?.status === 409
-            ? (err?.error?.message ?? this.t('error.400-code'))
+            ? (apiMsg ? this.tApiError(apiMsg) : this.t('error.400-code'))
             : err?.status === 401
               ? this.t('detail.login-notice')
               : this.t('error.unreachable'),
@@ -270,6 +274,10 @@ export class CourseDetailPage {
 
   t(key: string): string {
     return this.langService.t(key);
+  }
+
+  tApiError(msg?: string): string {
+    return this.langService.tApiError(msg);
   }
 
   tText(en: string): string {

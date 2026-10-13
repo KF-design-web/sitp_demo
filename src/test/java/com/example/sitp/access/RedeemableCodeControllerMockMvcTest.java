@@ -299,7 +299,7 @@ class RedeemableCodeControllerMockMvcTest {
         mockMvc.perform(post("/api/codes/" + codeString + "/redeem").cookie(holderCookie))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.message").value("Invalid or expired code."));
+                .andExpect(jsonPath("$.message").value("This code has already been used."));
 
         mockMvc.perform(post("/api/codes/XXX-NOPE0000/redeem").cookie(holderCookie))
                 .andExpect(status().isConflict())
