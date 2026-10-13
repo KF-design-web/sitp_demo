@@ -10,6 +10,7 @@ import com.example.sitp.course.model.Chapter;
 import com.example.sitp.course.model.Course;
 import com.example.sitp.course.repository.ChapterRepository;
 import com.example.sitp.course.repository.CourseRepository;
+import com.example.sitp.user.model.AccountType;
 import com.example.sitp.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,10 +125,10 @@ class CourseControllerDetailTest {
         return new jakarta.servlet.http.Cookie(nameAndValue[0], nameAndValue[1]);
     }
 
-    private void grantAnaAnActiveCode(Course course) {
+    private RedeemableCode grantAnaAnActiveCode(Course course, String codeLiteral) {
         var ana = userRepository.findByUsername("ana").orElseThrow();
-        redeemableCodeRepository.save(RedeemableCode.builder()
-                .code("GIT-TEST0001")
+        return redeemableCodeRepository.save(RedeemableCode.builder()
+                .code(codeLiteral)
                 .course(course)
                 .claimant(ana)
                 .status(RedeemableCodeStatus.ACTIVE)
@@ -135,13 +136,14 @@ class CourseControllerDetailTest {
     }
 
     private void grantAnaASecondActiveCodeForTheSameCourse(Course course) {
+        grantAnaAnActiveCode(course, "GIT-TEST0002");
+    }
+
+    private void registeredAna_enabledWithAccountType(AccountType accountType) throws Exception {
+        registerAna();
         var ana = userRepository.findByUsername("ana").orElseThrow();
-        redeemableCodeRepository.save(RedeemableCode.builder()
-                .code("GIT-TEST0002")
-                .course(course)
-                .claimant(ana)
-                .status(RedeemableCodeStatus.ACTIVE)
-                .build());
+        ana.setAccountType(accountType);
+        userRepository.save(ana);
     }
 
     @Test
@@ -170,7 +172,7 @@ class CourseControllerDetailTest {
         Course course = seededCourse();
         Long id = course.getId();
         registerAna();
-        grantAnaAnActiveCode(course);
+        grantAnaAnActiveCode(course, "GIT-TEST0001");
         jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
 
         mockMvc.perform(get("/api/courses/" + id).cookie(cookie))
@@ -191,7 +193,7 @@ class CourseControllerDetailTest {
         cleanTables();
         Course course = seededCourse();
         registerAna();
-        grantAnaAnActiveCode(course);
+        grantAnaAnActiveCode(course, "GIT-TEST0001");
         jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
 
         mockMvc.perform(get("/api/courses/" + course.getId()).cookie(cookie))
@@ -217,12 +219,91 @@ class CourseControllerDetailTest {
         cleanTables();
         Course course = seededCourse();
         registerAna();
-        grantAnaAnActiveCode(course);
+        grantAnaAnActiveCode(course, "GIT-TEST0001");
         grantAnaASecondActiveCodeForTheSameCourse(course);
         jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
 
         mockMvc.perform(get("/api/courses/" + course.getId()).cookie(cookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.chapters", hasSize(2)));
+    }
+
+    private Course seededInternCourse(String title, int chapterCount) {
+        Course c = courseRepository.save(Course.builder()
+                .title(title)
+                .description("People skills for the port workforce")
+                .price(new java.math.BigDecimal("50.00"))
+                .targetAudience(Audience.INTERN)
+                .build());
+        for (int i = 1; i <= chapterCount; i++) {
+            chapterRepository.save(Chapter.builder()
+                    .title("Chapter " + i).videoUrl("bunny-ref-" + i).position(i).course(c).build());
+        }
+        return c;
+    }
+
+    @Test
+    void internHolder_oneCodeForOneInternCourse_opensEveryInternCourse() throws Exception {
+        cleanTables();
+        Course hrCourse = seededInternCourse("HR Essentials", 1);
+        Course freightCourse = seededInternCourse("Freight Documentation", 2);
+        registeredAna_enabledWithAccountType(AccountType.INTERN);
+        grantAnaAnActiveCode(hrCourse, "HRE-TEST0001");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + freightCourse.getId()).cookie(cookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Freight Documentation"))
+                .andExpect(jsonPath("$.chapters", hasSize(2)));
+    }
+
+    @Test
+    void internHolder_codeServingAnOutsiderCourse_doesNotOpenOtherInternCourses() throws Exception {
+        cleanTables();
+        Course outsiderCourse = seededCourse();
+        Course otherInternCourse = seededInternCourse("Workplace Communication", 1);
+        registeredAna_enabledWithAccountType(AccountType.INTERN);
+        grantAnaAnActiveCode(outsiderCourse, "GIT-TEST0001");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + otherInternCourse.getId()).cookie(cookie))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Access denied."));
+
+        mockMvc.perform(get("/api/courses/" + outsiderCourse.getId()).cookie(cookie))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void internHolder_anInternCode_doesNotOpenOutsiderCourses() throws Exception {
+        cleanTables();
+        Course outsiderCourse = seededCourse();
+        Course hrCourse = seededInternCourse("HR Essentials", 1);
+        registeredAna_enabledWithAccountType(AccountType.INTERN);
+        grantAnaAnActiveCode(hrCourse, "HRE-TEST0001");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + outsiderCourse.getId()).cookie(cookie))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Access denied."));
+    }
+
+    @Test
+    void internHolder_passedTheTimeBox_earnsTheLocked403() throws Exception {
+        cleanTables();
+        Course internshipCourse = seededInternCourse("HR Essentials", 2);
+        registeredAna_enabledWithAccountType(AccountType.INTERN);
+        RedeemableCode row = grantAnaAnActiveCode(internshipCourse, "HRE-TEST0001");
+        row.setValidityDays(7);
+        row.setRedeemedAt(java.time.LocalDateTime.now().minusDays(10));
+        redeemableCodeRepository.save(row);
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie();
+
+        mockMvc.perform(get("/api/courses/" + internshipCourse.getId()).cookie(cookie))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Access denied."));
     }
 }

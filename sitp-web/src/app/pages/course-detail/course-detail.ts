@@ -66,7 +66,7 @@ import { LangService } from '../../core/lang.service';
             {{ t('codes.redeemed-text') }}
             <span class="font-semibold text-ink">{{ tText(confirmation()!.courseTitle) }}</span>
           </p>
-          <p class="mt-1 text-sm text-muted">{{ confirmation()!.accessUntil }}</p>
+          <p class="mt-1 text-sm text-muted">{{ accessUntilText(confirmation()!.accessUntil) }}</p>
           <div class="mt-6">
             <app-button (click)="openTheCourse()">
               {{ t('codes.redeemed-open') }}
@@ -278,6 +278,17 @@ export class CourseDetailPage {
 
   tApiError(msg?: string): string {
     return this.langService.tApiError(msg);
+  }
+
+  accessUntilText(accessUntil: string): string {
+    if (accessUntil === 'lifetime') {
+      return this.t('codes.access-lifetime');
+    }
+    const match = accessUntil.match(/^(\d+) days left$/);
+    if (match) {
+      return this.t('codes.access-days').replace('{{days}}', match[1]);
+    }
+    return accessUntil;
   }
 
   tText(en: string): string {

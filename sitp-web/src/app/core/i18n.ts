@@ -122,6 +122,10 @@ export const i18n: Record<string, { en: string; fr: string }> = {
     en: 'Count must be between 1 and 500.',
     fr: 'Le nombre doit être compris entre 1 et 500.',
   },
+  'error.api.validity-bounds': {
+    en: 'Intern codes need a validity between 1 and 3650 days.',
+    fr: 'Les codes internes requièrent une validité de 1 à 3650 jours.',
+  },
   'error.api.not-authenticated': { en: 'Not authenticated.', fr: 'Non authentifié.' },
   'error.api.unexpected': {
     en: 'Unexpected server error.',
@@ -191,6 +195,15 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'codes.create-course-missing': { en: 'Course not found.', fr: 'Cours introuvable.' },
   'codes.create-count-label': { en: 'How many codes', fr: 'Nombre de codes' },
   'codes.create-count-hint': { en: 'Between 1 and 500.', fr: 'Entre 1 et 500.' },
+  'codes.create-validity-label': { en: 'Validity in days', fr: 'Validité en jours' },
+  'codes.create-validity-hint': {
+    en: 'How long one code keeps an intern course open, counting from first use (1–3650).',
+    fr: "Combien de temps un code garde un cours interne ouvert, à partir de la première utilisation (1–3650).",
+  },
+  'codes.create-validity-required': {
+    en: 'Intern courses need a validity in days.',
+    fr: 'Les cours internes requièrent une validité en jours.',
+  },
   'codes.create-count-bounds': { en: 'Count must be between 1 and 500.', fr: 'Le nombre doit être entre 1 et 500.' },
   'codes.create-submit': { en: 'Create the codes', fr: 'Créer les codes' },
   'codes.create-loading': { en: 'Creating…', fr: 'Création…' },
@@ -235,6 +248,8 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'codes.redeemed-title': { en: 'The course is yours', fr: 'Le cours est à vous' },
   'codes.redeemed-text': { en: 'Your code was accepted for', fr: 'Votre code a été accepté pour' },
   'codes.redeemed-open': { en: 'Open the course', fr: 'Ouvrir le cours' },
+  'codes.access-lifetime': { en: 'lifetime', fr: 'à vie' },
+  'codes.access-days': { en: '{{days}} days left', fr: '{{days}} jours restants' },
 
   'error.403-access': { en: 'Access denied.', fr: 'Accès refusé.' },
 };

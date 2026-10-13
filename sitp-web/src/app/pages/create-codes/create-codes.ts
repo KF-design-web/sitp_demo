@@ -60,6 +60,22 @@ import { RouterLink } from '@angular/router';
         />
         <p class="mt-1 text-xs text-muted">{{ t('codes.create-count-hint') }}</p>
 
+        @if (internCourse()) {
+          <label class="mt-6 block text-sm font-medium text-ink" for="create-validity">
+            {{ t('codes.create-validity-label') }}
+          </label>
+          <input
+            id="create-validity"
+            type="number"
+            min="1"
+            max="3650"
+            class="mt-2 w-40 rounded-xl border border-line bg-bg px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+            [value]="validityDays() ?? ''"
+            (input)="onValidityChange($event)"
+          />
+          <p class="mt-1 text-xs text-muted">{{ t('codes.create-validity-hint') }}</p>
+        }
+
         @if (formError()) {
           <div class="mt-4">
             <app-error-slip [message]="formError()" />
@@ -113,13 +129,23 @@ export class CreateCodesPage {
   readonly courses = signal<CourseSummary[]>([]);
   readonly courseId = signal<number | null>(null);
   readonly count = signal(10);
+  readonly validityDays = signal<number | null>(null);
   readonly creating = signal(false);
   readonly formError = signal('');
   readonly createdCodes = signal<CreatedCode[] | null>(null);
   readonly copiedCode = signal<string | null>(null);
 
+  readonly internCourse = computed(
+    () =>
+      this.courses().find((c) => c.id === this.courseId())?.targetAudience === 'INTERN',
+  );
+
   readonly canCreate = computed(
-    () => this.courseId() !== null && this.count() >= 1 && this.count() <= 500,
+    () =>
+      this.courseId() !== null &&
+      this.count() >= 1 &&
+      this.count() <= 500 &&
+      (!this.internCourse() || (this.validityDays() !== null && this.validityDays()! >= 1)),
   );
 
   constructor() {
@@ -132,6 +158,11 @@ export class CreateCodesPage {
   onCourseChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.courseId.set(value === '' ? null : Number(value));
+  }
+
+  onValidityChange(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.validityDays.set(raw === '' ? null : Number(raw));
   }
 
   onCountChange(event: Event): void {
@@ -149,21 +180,29 @@ export class CreateCodesPage {
       return;
     }
 
+    if (this.internCourse() && (this.validityDays() === null || this.validityDays()! < 1)) {
+      this.formError.set(this.t('codes.create-validity-required'));
+      return;
+    }
+
     this.formError.set('');
     this.creating.set(true);
     this.createdCodes.set(null);
-    this.codesService.create(this.courseId()!, count).subscribe({
+    const validity = this.internCourse() ? this.validityDays()! : undefined;
+    this.codesService.create(this.courseId()!, count, validity).subscribe({
       next: (rows) => {
         this.creating.set(false);
         this.createdCodes.set(rows);
       },
-      error: (err: { status?: number }) => {
+      error: (err: { status?: number; error?: { message?: string } }) => {
         this.creating.set(false);
         this.formError.set(
           err?.status === 404
             ? this.t('codes.create-course-missing')
             : err?.status === 400
-              ? this.t('codes.create-count-bounds')
+              ? err?.error?.message
+                ? this.langService.tApiError(err.error.message)
+                : this.t('codes.create-count-bounds')
               : err?.status === 403
                 ? this.t('error.403-access')
                 : this.t('error.unreachable'),

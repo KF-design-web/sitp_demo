@@ -11,6 +11,7 @@ export class LangService {
     'Access denied.': 'error.api.access-denied',
     'Course not found.': 'error.api.course-not-found',
     'Count must be between 1 and 500.': 'error.api.count-bounds',
+    'Intern codes need a validity between 1 and 3650 days.': 'error.api.validity-bounds',
     'Not authenticated.': 'error.api.not-authenticated',
     'Unexpected server error.': 'error.api.unexpected',
   };

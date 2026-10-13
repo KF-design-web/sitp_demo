@@ -11,8 +11,11 @@ public interface RedeemableCodeRepository extends JpaRepository<RedeemableCode, 
 
     Optional<RedeemableCode> findByCode(String code);
 
-    boolean existsByClaimantIdAndCourseIdAndStatus(
+    List<RedeemableCode> findByClaimantIdAndCourseIdAndStatus(
             Long claimantId, Long courseId, RedeemableCodeStatus status);
+
+    List<RedeemableCode> findByClaimantIdAndStatus(
+            Long claimantId, RedeemableCodeStatus status);
 
     List<RedeemableCode> findByCourseId(Long courseId);
 

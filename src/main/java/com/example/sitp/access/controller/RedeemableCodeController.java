@@ -35,14 +35,15 @@ public class RedeemableCodeController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public List<CodeResponse> generate(@RequestParam Long courseId, @RequestParam int count) {
+    public List<CodeResponse> generate(@RequestParam Long courseId, @RequestParam int count,
+                                       @RequestParam(required = false) Integer validityDays) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (!isCodeManager(auth)) {
             throw new NoAccessGrantedException();
         }
 
-        return codeService.generateCodes(courseId, count).stream()
+        return codeService.generateCodes(courseId, count, validityDays).stream()
                 .map(CodeResponse::fromEntity)
                 .toList();
     }

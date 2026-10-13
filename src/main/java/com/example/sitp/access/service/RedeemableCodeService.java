@@ -9,6 +9,7 @@ import com.example.sitp.access.model.RedeemableCodeStatus;
 import com.example.sitp.access.repository.RedeemableCodeRepository;
 import com.example.sitp.common.SecureCodeGenerator;
 import com.example.sitp.course.exception.CourseNotFoundException;
+import com.example.sitp.course.model.Audience;
 import com.example.sitp.course.model.Course;
 import com.example.sitp.course.repository.CourseRepository;
 import com.example.sitp.user.model.AccountType;
@@ -44,6 +45,11 @@ public class RedeemableCodeService {
 
     @Transactional
     public List<RedeemableCode> generateCodes(Long courseId, int count) {
+        return generateCodes(courseId, count, null);
+    }
+
+    @Transactional
+    public List<RedeemableCode> generateCodes(Long courseId, int count, Integer validityDays) {
         if (count < 1 || count > 500) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Count must be between 1 and 500.");
@@ -51,6 +57,16 @@ public class RedeemableCodeService {
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
+
+        Integer timeBox = validityDays;
+        if (course.getTargetAudience() == Audience.INTERN) {
+            if (timeBox == null || timeBox < 1 || timeBox > 3650) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Intern codes need a validity between 1 and 3650 days.");
+            }
+        } else {
+            timeBox = null;
+        }
 
         List<RedeemableCode> codes = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -62,6 +78,7 @@ public class RedeemableCodeService {
             codes.add(RedeemableCode.builder()
                     .code(codeString)
                     .course(course)
+                    .validityDays(timeBox)
                     .status(RedeemableCodeStatus.ACTIVE)
                     .build());
         }

@@ -12,10 +12,13 @@ export class CodesService {
     return this.http.get<CreatedCode[]>(`${API_URL}/codes`, { params });
   }
 
-  create(courseId: number, count: number) {
-    const params = new HttpParams()
+  create(courseId: number, count: number, validityDays?: number) {
+    let params = new HttpParams()
       .set('courseId', String(courseId))
       .set('count', String(count));
+    if (validityDays !== undefined && validityDays !== null) {
+      params = params.set('validityDays', String(validityDays));
+    }
     return this.http.post<CreatedCode[]>(`${API_URL}/codes`, params);
   }
 

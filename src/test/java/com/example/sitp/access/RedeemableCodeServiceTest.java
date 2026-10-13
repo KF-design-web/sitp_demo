@@ -69,6 +69,50 @@ class RedeemableCodeServiceTest {
                 .build());
     }
 
+    private Course internCourse() {
+        return courseRepository.save(Course.builder()
+                .title("HR Essentials")
+                .description("People skills for the port workforce")
+                .price(new java.math.BigDecimal("50.00"))
+                .targetAudience(Audience.INTERN)
+                .build());
+    }
+
+    @Test
+    void mint_internCourse_withoutAValidityRefused_400NamingTheRule() {
+        cleanTables();
+        Course c = internCourse();
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> codeService.generateCodes(c.getId(), 1, null));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertNotNull(ex.getReason());
+        assertTrue(ex.getReason().contains("validity"),
+                "the refusal sentence should name the validity rule, got: " + ex.getReason());
+    }
+
+    @Test
+    void mint_internCourse_storesTheTimeBoxOnEveryRow() {
+        cleanTables();
+        Course c = internCourse();
+
+        List<RedeemableCode> minted = codeService.generateCodes(c.getId(), 3, 30);
+
+        assertEquals(3, minted.size());
+        minted.forEach(row -> assertEquals(Integer.valueOf(30), row.getValidityDays()));
+    }
+
+    @Test
+    void mint_outsiderCourse_theTimeBoxStaysTheDeliberateNull() {
+        cleanTables();
+        Course c = course();
+
+        List<RedeemableCode> minted = codeService.generateCodes(c.getId(), 2, 30);
+
+        assertEquals(2, minted.size());
+        minted.forEach(row -> assertNull(row.getValidityDays()));
+    }
+
     private User user(String username, Role role, AccountType accountType) {
         return userRepository.save(User.builder()
                 .email(username + "@mail.com")
