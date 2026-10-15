@@ -11,11 +11,12 @@ import { CodesService } from '../../codes/codes.service';
 import { CreatedCode } from '../../codes/codes.models';
 import { ErrorSlip } from '../../ui/error-slip/error-slip';
 import { Button } from '../../ui/button/button';
+import { ConfirmModal } from '../../ui/confirm-modal/confirm-modal';
 import { LangService } from '../../core/lang.service';
 
 @Component({
   selector: 'app-codes-list-page',
-  imports: [ErrorSlip, Button],
+  imports: [ErrorSlip, Button, ConfirmModal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="mx-auto max-w-3xl px-8 py-8">
@@ -73,7 +74,8 @@ import { LangService } from '../../core/lang.service';
                     <th class="py-2 pr-4 font-medium">{{ t('codes.list-col-code') }}</th>
                     <th class="py-2 pr-4 font-medium">{{ t('codes.list-col-status') }}</th>
                     <th class="py-2 pr-4 font-medium">{{ t('codes.list-col-claimed') }}</th>
-                    <th class="py-2 font-medium">{{ t('codes.list-col-created') }}</th>
+                    <th class="py-2 pr-4 font-medium">{{ t('codes.list-col-created') }}</th>
+                    <th class="py-2 font-medium"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-line">
@@ -92,6 +94,18 @@ import { LangService } from '../../core/lang.service';
                         {{ row.claimantUsername ?? t('codes.list-unclaimed') }}
                       </td>
                       <td class="py-3 text-muted">{{ formatDate(row.createdAt) }}</td>
+                      <td class="py-3 text-right">
+                        @if (row.status === 'ACTIVE') {
+                          <app-button
+                            variant="secondary"
+                            compact
+                            [disabled]="revokeAsk() !== null || revoking()"
+                            (click)="askRevoke(row.code)"
+                          >
+                            {{ t('codes.revoke') }}
+                          </app-button>
+                        }
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -114,11 +128,39 @@ import { LangService } from '../../core/lang.service';
                     {{ t('codes.list-col-claimed') }}:
                     {{ row.claimantUsername ?? t('codes.list-unclaimed') }}
                   </p>
+                  @if (row.status === 'ACTIVE') {
+                    <div class="mt-2 max-w-[10rem]">
+                      <app-button
+                        variant="secondary"
+                        compact
+                        [disabled]="revokeAsk() !== null || revoking()"
+                        (click)="askRevoke(row.code)"
+                      >
+                        {{ t('codes.revoke') }}
+                      </app-button>
+                    </div>
+                  }
                 </li>
               }
             </ul>
           }
+          @if (revokeError()) {
+            <div class="mt-4">
+              <app-error-slip [message]="revokeError()" />
+            </div>
+          }
         </div>
+      }
+
+      @if (revokeAsk() !== null) {
+        <app-confirm-modal
+          [title]="t('codes.revoke-confirm-title')"
+          [text]="t('codes.revoke-confirm-text')"
+          [confirmLabel]="t('codes.revoke-confirm-go')"
+          [cancelLabel]="t('codes.revoke-cancel')"
+          (confirm)="doRevoke()"
+          (cancel)="closeRevoke()"
+        />
       }
     </section>
   `,
@@ -133,6 +175,9 @@ export class CodesListPage {
   readonly rows = signal<CreatedCode[] | null>(null);
   readonly loading = signal(false);
   readonly listError = signal('');
+  readonly revokeAsk = signal<string | null>(null);
+  readonly revoking = signal(false);
+  readonly revokeError = signal('');
 
   readonly canPick = computed(() => this.courseId() !== null);
 
@@ -175,6 +220,36 @@ export class CodesListPage {
               ? this.t('error.403-access')
               : this.t('error.unreachable'),
         );
+      },
+    });
+  }
+
+  askRevoke(code: string): void {
+    this.revokeError.set('');
+    this.revokeAsk.set(code);
+  }
+
+  closeRevoke(): void {
+    this.revokeAsk.set(null);
+  }
+
+  doRevoke(): void {
+    const code = this.revokeAsk();
+    if (code === null) {
+      return;
+    }
+    this.revoking.set(true);
+    this.revokeError.set('');
+    this.codesService.revoke(code).subscribe({
+      next: () => {
+        this.revoking.set(false);
+        this.revokeAsk.set(null);
+        this.load();
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.revoking.set(false);
+        this.revokeAsk.set(null);
+        this.revokeError.set(this.langService.tApiError(err?.error?.message));
       },
     });
   }

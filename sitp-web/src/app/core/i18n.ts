@@ -116,6 +116,10 @@ export const i18n: Record<string, { en: string; fr: string }> = {
     fr: 'Ce code a déjà été utilisé.',
   },
   'error.api.code-revoked': { en: 'This code was revoked.', fr: 'Ce code a été révoqué.' },
+  'error.api.already-held': {
+    en: 'You already have access to this course.',
+    fr: 'Vous avez déjà accès à ce cours.',
+  },
   'error.api.access-denied': { en: 'Access denied.', fr: 'Accès refusé.' },
   'error.api.course-not-found': { en: 'Course not found.', fr: 'Cours introuvable.' },
   'error.api.count-bounds': {
@@ -233,6 +237,17 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'codes.list-col-created': { en: 'Created', fr: 'Créé le' },
   'codes.list-status-ACTIVE': { en: 'Active', fr: 'Actif' },
   'codes.list-status-REVOKED': { en: 'Revoked', fr: 'Révoqué' },
+  'codes.revoke': { en: 'Revoke', fr: 'Révoquer' },
+  'codes.revoke-confirm-title': {
+    en: 'Revoke this code?',
+    fr: 'Révoquer ce code ?',
+  },
+  'codes.revoke-confirm-text': {
+    en: 'The row stays in the history, but this code can never open its course again.',
+    fr: "La ligne reste dans l'historique, mais ce code ne pourra plus jamais ouvrir son cours.",
+  },
+  'codes.revoke-confirm-go': { en: 'Yes, revoke it', fr: 'Oui, révoquer' },
+  'codes.revoke-cancel': { en: 'Keep it', fr: 'Garder' },
   'codes.list-unclaimed': { en: 'Nobody yet', fr: 'Personne pour le moment' },
 
   'codes.locked-title': { en: 'This course is locked', fr: "Ce cours est verrouillé" },

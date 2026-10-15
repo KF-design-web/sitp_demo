@@ -8,6 +8,7 @@ export class LangService {
     'Invalid or expired code.': 'error.400-code',
     'This code has already been used.': 'error.api.code-used',
     'This code was revoked.': 'error.api.code-revoked',
+    'You already have access to this course.': 'error.api.already-held',
     'Access denied.': 'error.api.access-denied',
     'Course not found.': 'error.api.course-not-found',
     'Count must be between 1 and 500.': 'error.api.count-bounds',

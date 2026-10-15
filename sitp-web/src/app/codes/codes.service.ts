@@ -28,4 +28,11 @@ export class CodesService {
       null,
     );
   }
+
+  revoke(code: string) {
+    return this.http.post<CreatedCode>(
+      `${API_URL}/codes/${encodeURIComponent(code)}/revoke`,
+      null,
+    );
+  }
 }

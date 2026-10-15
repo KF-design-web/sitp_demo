@@ -1,9 +1,11 @@
 package com.example.sitp.access.service;
 
 import com.example.sitp.access.dto.RedeemResponse;
+import com.example.sitp.access.dto.CodeResponse;
 import com.example.sitp.access.exception.CodeAlreadyUsedException;
 import com.example.sitp.access.exception.CodeNotFoundException;
 import com.example.sitp.access.exception.CodeRevokedException;
+import com.example.sitp.access.exception.CourseAlreadyHeldException;
 import com.example.sitp.access.model.RedeemableCode;
 import com.example.sitp.access.model.RedeemableCodeStatus;
 import com.example.sitp.access.repository.RedeemableCodeRepository;
@@ -110,6 +112,11 @@ public class RedeemableCodeService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Not authenticated."));
 
+        if (user.getAccountType() == AccountType.OUTSIDER
+                && coversTheUsersHeldCourse(user, code.getCourse())) {
+            throw new CourseAlreadyHeldException();
+        }
+
         code.setClaimant(user);
         code.setRedeemedAt(LocalDateTime.now());
 
@@ -120,6 +127,27 @@ public class RedeemableCodeService {
                 saved.getCourse().getTitle(),
                 computeAccessUntil(user, saved)
         );
+    }
+
+    private boolean coversTheUsersHeldCourse(User user, Course course) {
+        return !codeRepository
+                .findByClaimantIdAndCourseIdAndStatus(user.getId(), course.getId(),
+                        RedeemableCodeStatus.ACTIVE)
+                .isEmpty();
+    }
+
+    @Transactional
+    public CodeResponse revoke(String codeString) {
+        RedeemableCode code = codeRepository.findByCode(codeString)
+                .orElseThrow(CodeNotFoundException::new);
+
+        if (code.getStatus() == RedeemableCodeStatus.REVOKED) {
+            throw new CodeRevokedException();
+        }
+
+        code.setStatus(RedeemableCodeStatus.REVOKED);
+        RedeemableCode saved = codeRepository.save(code);
+        return CodeResponse.fromEntity(saved);
     }
 
     private String computeAccessUntil(User user, RedeemableCode code) {

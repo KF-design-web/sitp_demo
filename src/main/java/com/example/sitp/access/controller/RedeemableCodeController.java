@@ -70,4 +70,15 @@ public class RedeemableCodeController {
         Long userId = (Long) auth.getPrincipal();
         return codeService.redeem(code, userId);
     }
+
+    @PostMapping("/{code}/revoke")
+    public CodeResponse revoke(@PathVariable String code) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (!isCodeManager(auth)) {
+            throw new NoAccessGrantedException();
+        }
+
+        return codeService.revoke(code);
+    }
 }

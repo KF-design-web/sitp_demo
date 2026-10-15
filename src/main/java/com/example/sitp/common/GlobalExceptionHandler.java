@@ -1,6 +1,7 @@
 package com.example.sitp.common;
 
 import com.example.sitp.access.exception.CodeAlreadyUsedException;
+import com.example.sitp.access.exception.CourseAlreadyHeldException;
 import com.example.sitp.access.exception.CodeNotFoundException;
 import com.example.sitp.access.exception.CodeRevokedException;
 import com.example.sitp.auth.exception.AccountDisabledException;
@@ -87,6 +88,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleCodeRevoked(CodeRevokedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), "This code was revoked."));
+    }
+
+    @ExceptionHandler(CourseAlreadyHeldException.class)
+    public ResponseEntity<ErrorResponse> handleCourseAlreadyHeld(CourseAlreadyHeldException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(),
+                        "You already have access to this course."));
     }
 
     @ExceptionHandler(NoAccessGrantedException.class)
