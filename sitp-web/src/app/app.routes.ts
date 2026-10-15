@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from './pages/forgot-password/forgot-password';
 import { VerifyEmailPage } from './pages/verify-email/verify-email';
 import { CreateCodesPage } from './pages/create-codes/create-codes';
 import { CodesListPage } from './pages/codes-list/codes-list';
+import { DashboardPage } from './pages/dashboard/dashboard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -20,4 +21,5 @@ export const routes: Routes = [
   { path: 'courses/:id', component: CourseDetailPage, title: 'SITP — Course' },
   { path: 'codes/create', component: CreateCodesPage, title: 'SITP — Create codes' },
   { path: 'codes', component: CodesListPage, title: 'SITP — Codes' },
+  { path: 'dashboard', component: DashboardPage, title: 'SITP — Dashboard' },
 ];

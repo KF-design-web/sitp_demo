@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -56,6 +58,7 @@ public class RegisterRequest {
 
     private com.example.sitp.user.model.Gender gender;
 
+    private LocalDate birthdate;
 
     @NotBlank
     private String captchaId;

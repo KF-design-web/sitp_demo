@@ -32,11 +32,11 @@ import { CaptchaField } from '../../ui/captcha-field/captcha-field';
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-6 flex flex-col gap-4">
         <app-text-field
-          formControlName="username"
-          type="text"
-          [label]="t('login.username')"
-          [hint]="t('login.username-hint')"
-          [error]="usernameError()"
+          formControlName="email"
+          type="email"
+          [label]="t('login.email')"
+          [hint]="t('login.email-hint')"
+          [error]="emailError()"
         />
         <app-text-field
           formControlName="password"
@@ -45,7 +45,7 @@ import { CaptchaField } from '../../ui/captcha-field/captcha-field';
         />
         <app-captcha-field [invalid]="captchaInvalid()" (resolved)="onCaptcha($event)" />
         <div>
-          <app-button type="submit" [loading]="submitting()" [loadingLabel]="t('login.loading')">
+          <app-button type="submit" compact [loading]="submitting()" [loadingLabel]="t('login.loading')">
             {{ t('login.submit') }}
           </app-button>
         </div>
@@ -96,16 +96,18 @@ export class LoginPage {
   }
 
   readonly form = this.fb.group({
-    username: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
   });
 
-
   private readonly formValues = toSignal(this.form.valueChanges, { initialValue: undefined });
 
-  readonly usernameError = computed(() => {
+  readonly emailError = computed(() => {
     this.formValues();
-    return this.form.controls.username.invalid ? this.t('error.required') : '';
+    const ctrl = this.form.controls.email;
+    if (ctrl.hasError('required')) return this.t('error.required');
+    if (ctrl.hasError('email')) return this.t('error.email-invalid');
+    return '';
   });
 
   t(key: string): string {
@@ -133,17 +135,17 @@ export class LoginPage {
       return;
     }
     this.submitting.set(true);
-    const { username, password } = this.form.getRawValue();
+    const { email, password } = this.form.getRawValue();
 
     this.authService.login({
-      username: username.trim().toLowerCase(),
+      email: email.trim().toLowerCase(),
       password,
       captchaId: this.captchaPair.id,
       captchaAnswer: this.captchaPair.answer,
     }).subscribe({
       next: (res) => {
         this.session.setUser(res.user);
-        this.router.navigate(['/courses']);
+        this.router.navigate(['/dashboard']);
       },
       error: (err: { status?: number; error?: { message?: string } }) => {
         this.submitting.set(false);

@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Invalid username or password."));
+                .body(ErrorResponse.of(HttpStatus.UNAUTHORIZED.value(), "Invalid email or password."));
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)

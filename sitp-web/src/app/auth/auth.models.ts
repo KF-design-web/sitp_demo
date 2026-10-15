@@ -8,10 +8,21 @@ export interface UserResponse {
   address: string | null;
   country: string | null;
   gender: 'MALE' | 'FEMALE' | null;
+  birthdate: string | null;
+  profilePictureUrl: string | null;
   role: string;
   accountType: string;
   enabled: boolean;
   createdAt: string;
+}
+
+export interface MyCourseResponse {
+  courseId: number;
+  courseTitle: string;
+  targetAudience: string;
+  codeStatus: string;
+  accessUntil: string | null;
+  accessValid: boolean;
 }
 
 export interface AuthResponse {
@@ -31,12 +42,13 @@ export interface RegisterPayload {
   address?: string;
   country?: string;
   gender?: 'MALE' | 'FEMALE' | null;
+  birthdate?: string;
   captchaId: string;
   captchaAnswer: string;
 }
 
 export interface LoginPayload {
-  username: string;
+  email: string;
   password: string;
   captchaId: string;
   captchaAnswer: string;

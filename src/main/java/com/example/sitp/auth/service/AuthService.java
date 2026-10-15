@@ -85,6 +85,7 @@ public class AuthService {
                 .address(trimOrNull(request.getAddress()))
                 .country(trimOrNull(request.getCountry()))
                 .gender(request.getGender())
+                .birthdate(request.getBirthdate())
                 .role(Role.TRAINEE)
                 .accountType(AccountType.OUTSIDER)
                 .enabled(false)
@@ -103,7 +104,7 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         captchaService.verify(request.getCaptchaId(), request.getCaptchaAnswer());
 
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {

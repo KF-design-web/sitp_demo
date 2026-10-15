@@ -5,6 +5,7 @@ import {
   AuthResponse,
   CaptchaChallenge,
   LoginPayload,
+  MyCourseResponse,
   RegisterPayload,
   UserResponse,
 } from './auth.models';
@@ -35,12 +36,15 @@ export class AuthService {
     if (body.gender) {
       params = params.set('gender', body.gender);
     }
+    if (body.birthdate) {
+      params = params.set('birthdate', body.birthdate);
+    }
     return this.http.post<UserResponse>(`${API_URL}/auth/register`, params);
   }
 
   login(body: LoginPayload) {
     const params = new HttpParams()
-      .set('username', body.username)
+      .set('email', body.email)
       .set('password', body.password)
       .set('captchaId', body.captchaId)
       .set('captchaAnswer', body.captchaAnswer);
@@ -77,6 +81,18 @@ export class AuthService {
 
   me() {
     return this.http.get<UserResponse>(`${API_URL}/auth/me`);
+  }
+
+  myCourses() {
+    return this.http.get<MyCourseResponse[]>(`${API_URL}/courses/mine`);
+  }
+
+  updateProfile(body: { username: string; profilePictureUrl?: string }) {
+    let params = new HttpParams().set('username', body.username);
+    if (body.profilePictureUrl) {
+      params = params.set('profilePictureUrl', body.profilePictureUrl);
+    }
+    return this.http.post<UserResponse>(`${API_URL}/users/me`, params);
   }
 
   logout() {

@@ -48,6 +48,7 @@ import { VerifyEmailPage } from '../verify-email/verify-email';
                 [placeholder]="t('register.country-placeholder')"
               />
               <app-text-field formControlName="address" type="text" [label]="t('register.address')" />
+              <app-text-field formControlName="birthdate" type="date" [label]="t('register.birthdate')" />
               <app-text-field formControlName="email" type="email" [label]="t('register.email')" [hint]="t('register.email-hint')" [error]="emailError()" />
               <app-text-field formControlName="username" type="text" [label]="t('register.username')" [hint]="t('register.username-hint')" [error]="usernameError()" />
             </div>
@@ -114,6 +115,7 @@ export class RegisterPage {
     gender: [''],
     country: [''],
     address: [''],
+    birthdate: [''],
     email: ['', [Validators.required, Validators.email]],
     username: ['', [
       Validators.required,

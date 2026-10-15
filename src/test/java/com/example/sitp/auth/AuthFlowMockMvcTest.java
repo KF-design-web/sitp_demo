@@ -100,7 +100,7 @@ class AuthFlowMockMvcTest {
         String[] cap = freshCaptcha();
         String setCookie = mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "ana")
+                        .param("email", "ana@mail.com")
                         .param("password", "password123")
                         .param("captchaId", cap[0])
                         .param("captchaAnswer", cap[1]))
@@ -220,7 +220,7 @@ class AuthFlowMockMvcTest {
         String[] cap8 = freshCaptcha();
         mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "ana")
+                        .param("email", "ana@mail.com")
                         .param("password", "password123")
                         .param("captchaId", cap8[0])
                         .param("captchaAnswer", cap8[1]))
@@ -231,7 +231,7 @@ class AuthFlowMockMvcTest {
         String[] cap9 = freshCaptcha();
         String cookie = mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "ana")
+                        .param("email", "ana@mail.com")
                         .param("password", "password123")
                         .param("captchaId", cap9[0])
                         .param("captchaAnswer", cap9[1]))

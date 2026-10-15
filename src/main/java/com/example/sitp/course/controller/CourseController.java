@@ -2,14 +2,19 @@ package com.example.sitp.course.controller;
 
 import com.example.sitp.course.dto.CourseDetailResponse;
 import com.example.sitp.course.dto.CourseResponse;
+import com.example.sitp.course.dto.MyCourseResponse;
 import com.example.sitp.course.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -33,6 +38,23 @@ public class CourseController {
     public List<CourseResponse> getAll() {
 
         return courseService.getAll();
+    }
+
+    @Operation(summary = "The logged-in user's courses (from their claimed redeemable codes)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "The user's courses with code status and access expiry."),
+            @ApiResponse(responseCode = "401",
+                    description = "Anonymous knock - not signed in.")
+    })
+    @GetMapping("/mine")
+    public List<MyCourseResponse> myCourses() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof Long)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated.");
+        }
+        Long userId = (Long) auth.getPrincipal();
+        return courseService.myCourses(userId);
     }
 
     @Operation(summary = "One course's full detail with its chapters in teaching order (logged-in members only)")

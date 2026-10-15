@@ -12,7 +12,7 @@ import {
   template: `
     <button
       [type]="type()"
-      [disabled]="loading()"
+      [disabled]="loading() || disabled()"
       [attr.aria-busy]="loading() ? true : null"
       class="focus:outline-none focus:ring-2 focus:ring-primary
              disabled:cursor-not-allowed disabled:opacity-50
@@ -40,6 +40,7 @@ export class Button {
   );
 
   readonly compact = input(false, { transform: booleanAttribute });
+  readonly disabled = input(false, { transform: booleanAttribute });
 
   readonly sizeClasses = computed(() =>
     this.compact()

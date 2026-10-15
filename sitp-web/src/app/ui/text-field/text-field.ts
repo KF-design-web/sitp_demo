@@ -64,7 +64,7 @@ let nextId = 0;
 })
 export class TextField implements ControlValueAccessor {
   label = input.required<string>();
-  type = input<'text' | 'password' | 'email'>('text');
+  type = input<'text' | 'password' | 'email' | 'date'>('text');
   hint = input<string>();
   error = input<string>();
   touched = output<void>();

@@ -113,7 +113,7 @@ class CourseControllerDetailTest {
         String setCookie = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "ana")
+                        .param("email", "ana@mail.com")
                         .param("password", "password123")
                         .param("captchaId", cap[0])
                         .param("captchaAnswer", cap[1]))

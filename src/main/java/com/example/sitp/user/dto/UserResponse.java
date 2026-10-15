@@ -8,6 +8,7 @@ import com.example.sitp.user.model.User;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,6 +24,8 @@ public class UserResponse {
     private final String address;
     private final String country;
     private final Gender gender;
+    private final LocalDate birthdate;
+    private final String profilePictureUrl;
     private final Role role;
     private final AccountType accountType;
     private final boolean enabled;
@@ -39,6 +42,8 @@ public class UserResponse {
                 .address(user.getAddress())
                 .country(user.getCountry())
                 .gender(user.getGender())
+                .birthdate(user.getBirthdate())
+                .profilePictureUrl(user.getProfilePictureUrl())
                 .role(user.getRole())
                 .accountType(user.getAccountType())
                 .enabled(user.isEnabled())

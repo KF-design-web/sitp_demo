@@ -11,6 +11,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -55,6 +56,10 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    private LocalDate birthdate;
+
+    private String profilePictureUrl;
 
     @Builder.Default
     private boolean enabled = false;

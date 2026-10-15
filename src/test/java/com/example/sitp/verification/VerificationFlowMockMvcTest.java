@@ -106,7 +106,7 @@ class VerificationFlowMockMvcTest {
         String[] capA = freshCaptcha();
         mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "bob")
+                        .param("email", "bob@mail.com")
                         .param("password", "password123")
                         .param("captchaId", capA[0])
                         .param("captchaAnswer", capA[1]))
@@ -128,7 +128,7 @@ class VerificationFlowMockMvcTest {
         String[] capB = freshCaptcha();
         mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "bob")
+                        .param("email", "bob@mail.com")
                         .param("password", "password123")
                         .param("captchaId", capB[0])
                         .param("captchaAnswer", capB[1]))
@@ -162,7 +162,7 @@ class VerificationFlowMockMvcTest {
         String[] capC = freshCaptcha();
         String cookie = mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "bob")
+                        .param("email", "bob@mail.com")
                         .param("password", "password123")
                         .param("captchaId", capC[0])
                         .param("captchaAnswer", capC[1]))
@@ -195,7 +195,7 @@ class VerificationFlowMockMvcTest {
         String[] capD = freshCaptcha();
         mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", "bob")
+                        .param("email", "bob@mail.com")
                         .param("password", "newpass456")
                         .param("captchaId", capD[0])
                         .param("captchaAnswer", capD[1]))

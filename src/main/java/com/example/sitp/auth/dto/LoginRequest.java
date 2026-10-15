@@ -1,5 +1,6 @@
 package com.example.sitp.auth.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,10 +16,11 @@ import lombok.Setter;
 public class LoginRequest {
 
     @NotBlank
-    private String username;
+    @Email
+    private String email;
 
-    public void setUsername(String username) {
-        this.username = username == null ? null : username.trim().toLowerCase();
+    public void setEmail(String email) {
+        this.email = email == null ? null : email.trim().toLowerCase();
     }
 
     @NotBlank

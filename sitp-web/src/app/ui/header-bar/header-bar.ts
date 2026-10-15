@@ -34,7 +34,10 @@ import { ConfirmModal } from '../confirm-modal/confirm-modal';
 
         <div class="flex items-center gap-4">
           @if (user(); as u) {
-            <span class="hidden text-sm text-muted sm:inline">{{ u.username }}</span>
+            <a
+              routerLink="/dashboard"
+              class="hidden text-sm font-medium text-muted transition-colors hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary sm:inline"
+            >{{ u.username }}</a>
             <app-button variant="secondary" compact (click)="askLogout()">
               {{ t('header.logout') }}
             </app-button>

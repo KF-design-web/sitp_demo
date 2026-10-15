@@ -10,10 +10,10 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'login.loading': { en: 'Signing in…', fr: 'Connexion…' },
   'login.no-account-yet': { en: 'No account yet?', fr: 'Pas encore de compte ?' },
   'login.create-one': { en: 'Create one', fr: 'Créez-en un' },
-  'login.username': { en: 'Username', fr: "Nom d'utilisateur" },
-  'login.username-hint': {
-    en: 'Your username — not your email.',
-    fr: "Votre nom d'utilisateur — pas votre e-mail.",
+  'login.email': { en: 'Email', fr: 'E-mail' },
+  'login.email-hint': {
+    en: 'The email you registered with.',
+    fr: "L'e-mail avec lequel vous vous êtes inscrit.",
   },
   'login.forgot-password': { en: 'Forgot password?', fr: 'Mot de passe oublié ?' },
   'login.captcha': { en: 'Robot check', fr: 'Vérification anti-robot' },
@@ -38,6 +38,7 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'register.lastName': { en: 'Last name', fr: 'Nom' },
   'register.phoneNumber': { en: 'Phone number', fr: 'Téléphone' },
   'register.address': { en: 'Address', fr: 'Adresse' },
+  'register.birthdate': { en: 'Birthdate', fr: 'Date de naissance' },
   'register.country': { en: 'Country', fr: 'Pays' },
   'register.country-placeholder': { en: 'Choose your country', fr: 'Choisissez votre pays' },
   'register.gender': { en: 'Gender', fr: 'Sexe' },
@@ -90,8 +91,8 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'error.unreachable': { en: 'Cannot reach the server.', fr: 'Impossible de joindre le serveur.' },
   'error.fallback': { en: 'Something went wrong.', fr: 'Une erreur est survenue.' },
   'error.401-login': {
-    en: 'Invalid username or password.',
-    fr: "Nom d'utilisateur ou mot de passe invalide.",
+    en: 'Invalid email or password.',
+    fr: 'E-mail ou mot de passe invalide.',
   },
   'error.409-email': { en: 'This email is already registered.', fr: 'Cet e-mail est déjà enregistré.' },
   'verify.heading': { en: 'Verify your email', fr: 'Vérifiez votre e-mail' },
@@ -267,6 +268,42 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'codes.access-days': { en: '{{days}} days left', fr: '{{days}} jours restants' },
 
   'error.403-access': { en: 'Access denied.', fr: 'Accès refusé.' },
+
+  'dashboard.heading': { en: 'My dashboard', fr: 'Mon tableau de bord' },
+  'dashboard.addCourse': { en: 'Add course', fr: 'Ajouter un cours' },
+  'dashboard.loading': { en: 'Loading your courses…', fr: 'Chargement de vos cours…' },
+  'dashboard.emptyTitle': { en: 'No courses yet', fr: 'Aucun cours pour le moment' },
+  'dashboard.emptyText': {
+    en: 'Browse the catalog and redeem a code to unlock your first course.',
+    fr: 'Parcourez le catalogue et échangez un code pour débloquer votre premier cours.',
+  },
+  'dashboard.browseCourses': { en: 'Browse courses', fr: 'Parcourir les cours' },
+  'dashboard.resume': { en: 'Resume', fr: 'Reprendre' },
+  'dashboard.expired': { en: 'Expired', fr: 'Expiré' },
+  'dashboard.memberSince': { en: 'Member since', fr: 'Membre depuis' },
+  'dashboard.country': { en: 'Country', fr: 'Pays' },
+  'dashboard.age': { en: 'Age', fr: 'Âge' },
+  'dashboard.years': { en: 'years', fr: 'ans' },
+  'dashboard.email': { en: 'Email', fr: 'E-mail' },
+  'dashboard.statusActive': { en: 'Active', fr: 'Actif' },
+  'dashboard.statusExpired': { en: 'Expired', fr: 'Expiré' },
+  'dashboard.type-intern': { en: 'Professional / Academic', fr: 'Professionnel / Académique' },
+  'dashboard.type-outsider': { en: 'Community Member', fr: 'Membre de la communauté' },
+  'dashboard.editProfile': { en: 'Edit profile', fr: 'Modifier le profil' },
+  'dashboard.editUsername': { en: 'Username', fr: "Nom d'utilisateur" },
+  'dashboard.editUsernameHint': {
+    en: '3–30 characters: letters, digits, dot, underscore, hyphen.',
+    fr: '3 à 30 caractères : lettres, chiffres, point, tiret bas, tiret.',
+  },
+  'dashboard.editPictureUrl': { en: 'Profile picture URL', fr: 'URL de la photo de profil' },
+  'dashboard.editPictureUrlHint': {
+    en: 'Paste a link to your photo (optional).',
+    fr: 'Collez un lien vers votre photo (optionnel).',
+  },
+  'dashboard.saveProfile': { en: 'Save changes', fr: 'Enregistrer' },
+  'dashboard.savingProfile': { en: 'Saving…', fr: 'Enregistrement…' },
+  'dashboard.profileSaved': { en: 'Profile updated.', fr: 'Profil mis à jour.' },
+  'dashboard.profileError': { en: 'Could not update profile.', fr: 'Impossible de mettre à jour le profil.' },
 };
 
 export const contentFr: Record<string, string> = {

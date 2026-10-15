@@ -92,12 +92,11 @@ class RedeemableCodeControllerMockMvcTest {
         return new String[]{id, answer};
     }
 
-    private jakarta.servlet.http.Cookie loginAndGrabCookie(String username) throws Exception {
+    private jakarta.servlet.http.Cookie loginAndGrabCookie(String email) throws Exception {
         String[] cap = freshCaptcha();
         String setCookie = mockMvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
-                        .param("username", username)
-                        .param("password", "password123")
+                        .param("email", email)                        .param("password", "password123")
                         .param("captchaId", cap[0])
                         .param("captchaAnswer", cap[1]))
                 .andExpect(status().isOk())
@@ -125,7 +124,7 @@ class RedeemableCodeControllerMockMvcTest {
         cleanTables();
         Course c = course();
         seedUser("plain.trainee", Role.TRAINEE);
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("plain.trainee");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("plain.trainee@mail.com");
 
         mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -142,7 +141,7 @@ class RedeemableCodeControllerMockMvcTest {
         cleanTables();
         Course c = course();
         seedUser("the.boss", Role.BOSS);
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.boss");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.boss@mail.com");
 
         mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -165,7 +164,7 @@ class RedeemableCodeControllerMockMvcTest {
         cleanTables();
         Course c = course();
         seedUser("the.assistant", Role.ADMIN_ASSISTANT);
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.assistant");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.assistant@mail.com");
 
         mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -180,7 +179,7 @@ class RedeemableCodeControllerMockMvcTest {
     void mint_unknownCourse_answersTheThrown404() throws Exception {
         cleanTables();
         seedUser("the.boss", Role.BOSS);
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.boss");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.boss@mail.com");
 
         mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -197,7 +196,7 @@ class RedeemableCodeControllerMockMvcTest {
         cleanTables();
         Course c = course();
         seedUser("the.boss", Role.BOSS);
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.boss");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("the.boss@mail.com");
 
         mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -219,7 +218,7 @@ class RedeemableCodeControllerMockMvcTest {
                         .get("/api/codes").param("courseId", String.valueOf(c.getId())))
                 .andExpect(status().isUnauthorized());
 
-        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("plain.trainee");
+        jakarta.servlet.http.Cookie cookie = loginAndGrabCookie("plain.trainee@mail.com");
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .get("/api/codes").param("courseId", String.valueOf(c.getId())).cookie(cookie))
                 .andExpect(status().isForbidden())
@@ -233,7 +232,7 @@ class RedeemableCodeControllerMockMvcTest {
         Course c = course();
         seedUser("the.boss", Role.BOSS);
         seedUser("code.holder2", Role.TRAINEE);
-        jakarta.servlet.http.Cookie bossCookie = loginAndGrabCookie("the.boss");
+        jakarta.servlet.http.Cookie bossCookie = loginAndGrabCookie("the.boss@mail.com");
 
         String mintBody = mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -249,7 +248,7 @@ class RedeemableCodeControllerMockMvcTest {
         matcher.find();
         String second = matcher.group(1);
 
-        jakarta.servlet.http.Cookie holderCookie = loginAndGrabCookie("code.holder2");
+        jakarta.servlet.http.Cookie holderCookie = loginAndGrabCookie("code.holder2@mail.com");
         mockMvc.perform(post("/api/codes/" + first + "/redeem").cookie(holderCookie))
                 .andExpect(status().isOk());
 
@@ -278,7 +277,7 @@ class RedeemableCodeControllerMockMvcTest {
         Course c = course();
         seedUser("the.boss", Role.BOSS);
         seedUser("code.holder", Role.TRAINEE);
-        jakarta.servlet.http.Cookie bossCookie = loginAndGrabCookie("the.boss");
+        jakarta.servlet.http.Cookie bossCookie = loginAndGrabCookie("the.boss@mail.com");
 
         String body = mockMvc.perform(post("/api/codes")
                         .contentType("application/x-www-form-urlencoded")
@@ -289,7 +288,7 @@ class RedeemableCodeControllerMockMvcTest {
                 .andReturn().getResponse().getContentAsString();
         String codeString = body.replaceAll(".*\"code\":\"([A-Z0-9-]+)\".*", "$1").trim();
 
-        jakarta.servlet.http.Cookie holderCookie = loginAndGrabCookie("code.holder");
+        jakarta.servlet.http.Cookie holderCookie = loginAndGrabCookie("code.holder@mail.com");
         mockMvc.perform(post("/api/codes/" + codeString + "/redeem").cookie(holderCookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.courseId").value(c.getId()))

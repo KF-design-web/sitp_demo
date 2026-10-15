@@ -173,12 +173,12 @@ class AuthServiceTest {
     }
 
     @Test
-    void login_byUsername_afterVerificationSurgery() {
+    void login_byEmail_afterVerificationSurgery() {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
         enable("ana");
 
-        AuthResponse auth = login("ana");
+        AuthResponse auth = login("ana@mail.com");
 
         assertThat(auth.getUser().getUsername()).isEqualTo("ana");
         assertThat(auth.getUser().getEmail()).isEqualTo("ana@mail.com");
@@ -190,16 +190,16 @@ class AuthServiceTest {
         authService.register(registerRequest("ana@mail.com"));
         enable("ana");
 
-        LoginRequest wrong = loginRequest("ana", "totally-wrong");
+        LoginRequest wrong = loginRequest("ana@mail.com", "totally-wrong");
 
         assertThatThrownBy(() -> authService.login(wrong))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 
     @Test
-    void login_unknownUsername_throwsTheSAMEExceptionAsWrongPassword() {
+    void login_unknownEmail_throwsTheSAMEExceptionAsWrongPassword() {
         deleteAllRows();
-        LoginRequest stranger = loginRequest("ghost", "whatever");
+        LoginRequest stranger = loginRequest("ghost@mail.com", "whatever");
 
         assertThatThrownBy(() -> authService.login(stranger))
                 .isInstanceOf(InvalidCredentialsException.class);
@@ -210,7 +210,7 @@ class AuthServiceTest {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
 
-        assertThatThrownBy(() -> authService.login(loginRequest("ana", "password123")))
+        assertThatThrownBy(() -> authService.login(loginRequest("ana@mail.com", "password123")))
                 .isInstanceOf(com.example.sitp.auth.exception.AccountDisabledException.class);
     }
 
@@ -220,7 +220,7 @@ class AuthServiceTest {
         authService.register(registerRequest("ana@mail.com"));
         enable("ana");
 
-        AuthResponse first = login("ana");
+        AuthResponse first = login("ana@mail.com");
 
         var active = sessionRepository.findByTokenAndActiveTrue(first.getToken());
         assertThat(active).isPresent();
@@ -236,8 +236,8 @@ class AuthServiceTest {
         authService.register(registerRequest("ana@mail.com"));
         enable("ana");
 
-        AuthResponse first = login("ana");
-        AuthResponse second = login("ana");
+        AuthResponse first = login("ana@mail.com");
+        AuthResponse second = login("ana@mail.com");
 
         assertThat(sessionRepository.findByTokenAndActiveTrue(first.getToken())).isEmpty();
         assertThat(sessionRepository.findByTokenAndActiveTrue(second.getToken())).isPresent();
@@ -250,7 +250,7 @@ class AuthServiceTest {
         deleteAllRows();
         authService.register(registerRequest("ana@mail.com"));
         enable("ana");
-        AuthResponse auth = login("ana");
+        AuthResponse auth = login("ana@mail.com");
 
         authService.logout(auth.getToken());
 
@@ -262,18 +262,18 @@ class AuthServiceTest {
     }
 
 
-    private LoginRequest loginRequest(String username, String password) {
+    private LoginRequest loginRequest(String email, String password) {
         CaptchaChallenge captcha = captchaService.issue();
         return LoginRequest.builder()
-                .username(username)
+                .email(email)
                 .password(password)
                 .captchaId(String.valueOf(captcha.getId()))
                 .captchaAnswer(answerOf(captcha))
                 .build();
     }
 
-    private AuthResponse login(String username) {
-        return authService.login(loginRequest(username, "password123"));
+    private AuthResponse login(String email) {
+        return authService.login(loginRequest(email, "password123"));
     }
 
     private void enable(String username) {
