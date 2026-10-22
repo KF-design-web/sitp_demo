@@ -10,7 +10,10 @@ import com.example.sitp.auth.exception.InvalidCaptchaException;
 import com.example.sitp.auth.exception.InvalidCredentialsException;
 import com.example.sitp.auth.exception.PasswordMismatchException;
 import com.example.sitp.auth.exception.UsernameAlreadyExistsException;
+import com.example.sitp.course.exception.CourseDeletionBlockedException;
+import com.example.sitp.course.exception.ChapterNotFoundException;
 import com.example.sitp.course.exception.CourseNotFoundException;
+import com.example.sitp.course.exception.CourseOwnershipException;
 import com.example.sitp.verification.exception.VerificationCodeInvalidException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +75,13 @@ public class GlobalExceptionHandler {
                         "Course not found."));
     }
 
+    @ExceptionHandler(ChapterNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleChapterNotFound(ChapterNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(HttpStatus.NOT_FOUND.value(),
+                        "Episode not found."));
+    }
+
     @ExceptionHandler(CodeNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCodeNotFound(CodeNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -95,6 +105,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(HttpStatus.CONFLICT.value(),
                         "You already have access to this course."));
+    }
+
+    @ExceptionHandler(CourseOwnershipException.class)
+    public ResponseEntity<ErrorResponse> handleCourseOwnership(CourseOwnershipException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of(HttpStatus.FORBIDDEN.value(),
+                        "This course belongs to another trainer."));
+    }
+
+    @ExceptionHandler(CourseDeletionBlockedException.class)
+    public ResponseEntity<ErrorResponse> handleCourseDeletionBlocked(CourseDeletionBlockedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(),
+                        "This course has codes handed out and cannot be deleted yet."));
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(),
+                        "Invalid value for " + ex.getName() + "."));
     }
 
     @ExceptionHandler(NoAccessGrantedException.class)

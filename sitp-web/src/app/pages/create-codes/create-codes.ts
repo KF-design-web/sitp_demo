@@ -12,7 +12,7 @@ import { CreatedCode } from '../../codes/codes.models';
 import { ErrorSlip } from '../../ui/error-slip/error-slip';
 import { Button } from '../../ui/button/button';
 import { LangService } from '../../core/lang.service';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-create-codes-page',
@@ -125,6 +125,7 @@ export class CreateCodesPage {
   private courseService = inject(CourseService);
   private codesService = inject(CodesService);
   private langService = inject(LangService);
+  private route = inject(ActivatedRoute);
 
   readonly courses = signal<CourseSummary[]>([]);
   readonly courseId = signal<number | null>(null);
@@ -149,8 +150,15 @@ export class CreateCodesPage {
   );
 
   constructor() {
+    // When arriving from the course list's "New codes" button, preselect the course.
+    const wanted = Number(this.route.snapshot.queryParamMap.get('courseId')) || null;
     this.courseService.getAll().subscribe({
-      next: (list) => this.courses.set(list),
+      next: (list) => {
+        this.courses.set(list);
+        if (wanted !== null && list.some((c) => c.id === wanted)) {
+          this.courseId.set(wanted);
+        }
+      },
       error: () => this.formError.set(this.t('error.unreachable')),
     });
   }

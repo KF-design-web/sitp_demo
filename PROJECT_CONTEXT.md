@@ -34,7 +34,7 @@ Corporate e-learning platform (SITP) for a company in Cameroon. Two audiences: *
 - `SITP-Docs/` — original contract (requirements, api-spec, ai-context)
 
 ## 5. Core Entities
-- **User**: id, email (unique), username (unique, lowercase), passwordHash, role (BOSS/TRAINER/ADMIN_ASSISTANT/TRAINEE), accountType (INTERN/OUTSIDER), firstName, lastName, phoneNumber?, address?, country?, gender?, enabled (default false), createdAt, updatedAt
+- **User**: id, email (unique), username (unique, lowercase), passwordHash, role (BOSS/TRAINER/ADMIN_ASSISTANT/TRAINEE), accountType (INTERN/OUTSIDER), firstName, lastName, phoneNumber?, address?, country?, gender?, birthdate?, profilePictureUrl?, enabled (default false), createdAt, updatedAt
 - **Session**: id, user (ManyToOne), token (unique), active (default true), expiresAt
 - **Course**: id, title, description, price (BigDecimal), targetAudience (INTERN/OUTSIDER)
 - **Chapter**: id, title, videoUrl, position, course (ManyToOne)
@@ -56,8 +56,18 @@ Corporate e-learning platform (SITP) for a company in Cameroon. Two audiences: *
 | POST | `/api/verification/reset-password` | Form. Resets password, invalidates sessions. |
 | GET | `/api/courses` | Public catalog. Price only if authenticated. |
 | GET | `/api/courses/{id}` | Detail + chapters. Requires redeemable code access. |
+| GET | `/api/courses/mine` | The logged-in user's courses (from their claimed codes). |
 | POST | `/api/codes?courseId&count` | Generate codes (BOSS/ADMIN_ASSISTANT only). |
 | POST | `/api/codes/{code}/redeem` | Redeem code → grants course access. |
+| POST | `/api/codes/{code}/revoke` | Revoke code (BOSS/ADMIN_ASSISTANT only) — one row edit ACTIVE→REVOKED, claimant/redeemedAt untouched. |
+| POST | `/api/courses/trainer` | Trainer-only create (form: title, description?, targetAudience, price?) → 201; trainer set from principal. |
+| GET | `/api/courses/trainer/mine` | Trainer's own courses only (Trainer role). |
+| PUT | `/api/courses/{id}` | Trainer updates OWN course (Trainer role + owner-only) — title/description/labels/thumbnailUrl/price ONLY, `targetAudience` not editable. |
+| DELETE | `/api/courses/{id}` | Trainer deletes OWN course — 409 while redeemable codes exist for it; deletes its chapters first. |
+| GET | `/api/courses/trainer/{id}` | Trainer reads OWN course detail + episodes WITHOUT needing a redeemable code (the studio's library view). |
+| POST | `/api/courses/{id}/chapters` | Trainer adds an episode to OWN course — title/description/labels/videoUrl/thumbnailUrl/position (position auto-appends last). 201. |
+| PUT | `/api/chapters/{id}` | Trainer updates an episode of OWN course (all fields incl. position). |
+| DELETE | `/api/chapters/{id}` | Trainer deletes an episode of OWN course — 204, no code-refusal (episodes never carry codes). |
 
 ## 7. Conventions
 - **Naming**: packages lowercase, classes PascalCase, DTOs suffixed `Request`/`Response`, exceptions suffixed `Exception`.
@@ -73,12 +83,16 @@ Corporate e-learning platform (SITP) for a company in Cameroon. Two audiences: *
 - **Single active session**: login calls `invalidateByUserId` — financial anti-sharing measure.
 - **Price visibility**: `priceVisible` flag in DTOs; price null for anonymous. Frontend never guesses.
 - **Course detail access** (0d landed 2026-10-13): `CourseAccessGuard` checks `RedeemableCode`. Two halves — (1) exact: a claimed ACTIVE code covering THIS course (0f: expiry computed at read from `redeemedAt` + `validityDays`; a null `validityDays` = the deliberate lifetime null); (2) intern (0d): an INTERN holding ONE unexpired claimed code over an INTERN-targeted course opens EVERY INTERN-targeted course; an OUTSIDER only the exact course. No cover → `NoAccessGrantedException` (403). Intern minting REQUIRES a validity in days (1–3650, 0e); outsider mint forces the null.
-- **Video storage**: `VideoStorageService` interface + `InMemoryVideoStorageService` stub. Bunny Stream planned Slice 6.
+- **Revoke door + duplicate law (0g, landed 2026-10-15):** revoke = one row edit ACTIVE→REVOKED (claimant/redeemedAt stay — the crossed-out row history); the claimant loses access at read (guard scores ACTIVE only). Re-revoking refuses 409 "This code was revoked." Duplicate redeem: an OUTSIDER claiming a code for a course they already access-hold → 409 `CourseAlreadyHeldException` ("You already have access to this course.", code NOT burned); an INTERN claiming again is ALLOWED (renewal semantics, requirements §3).
+- **Trainer CRUD doors (0a–0e answers → code, Phase A 2026-10-15 + Phase B/C 2026-10-20):** `Course.trainer` (`@ManyToOne`, nullable — pre-slice courses + Boss-unassigned). Create/list/update/delete doors are TRAINER-role-only (`requireTrainerId` → else 403); writes are owner-only via `getCourseForTrainer` (Phase A's `findByTrainerIdAndId` as the isolation verdict; unknown → 404) → `CourseOwnershipException` 403 "This course belongs to another trainer." Update does NOT touch `targetAudience` (audience drives codes — decision flagged). Delete refuses 409 `CourseDeletionBlockedException` "This course has codes handed out and cannot be deleted yet." while `findByCourseId` returns rows (never crashes the FK — the crossed-out-rows law), else wipes the course's chapters then the course (204).
+- **The TRAINER STUDIO (the Slice-6 correction, #161 2026-10-21, the developer's direction: "like a YouTube account — add a video, library, delete them, description, labels, thumbnails"):** the original UI phase (the old "grid + form" plan, since renumbered Phase D) was too small — re-scoped as the trainer studio and shipped WITH the slice. DECISIONS (all answered): video = URL-paste today on `Chapter.videoUrl` (real upload rides the Bunny Stream seam later — the developer: "all of them will go to bunny"; the field feeds both paste and, later, upload) · labels = free-text trainer-typed comma strings on BOTH `Course` + `Chapter` (rendered as pills) · thumbnails = BOTH (`Course.thumbnailUrl` cover + `Chapter.thumbnailUrl` episode cover) · route = dedicated `/trainer` studio + `/trainer/courses/:id` library (TRAINER-only header link; client-side role guard). Episode doors are owner-only through the same ownership law; `Chapter` also grew `description`. The owner course-detail door `GET /api/courses/trainer/{id}` exists because the public detail door demands a redeemable code the owner shouldn't need for their own content.
+- **Video storage**: `VideoStorageService` interface + `InMemoryVideoStorageService` stub. Bunny Stream planned Slice 6. **Real profile-picture upload waits for the Bunny part too** (2026-10-15 decision): pictures ride the video storage seam (one account/one env-var set for both); when Bunny's turn comes, research Bunny picture-vs-video hosting + costs BEFORE wiring; `profilePictureUrl` column + URL-based avatar unchanged; local-disk (no signup) is the fallback if pictures are wanted sooner.
 - **OpenApiConfig**: Customizer converts `$ref` object query params to form request bodies (form-urlencoded endpoints).
 
 ## 9. Current State
-- **Done**: Slice 1 (Auth), Slice 2 (Catalog), Slice 3 (Detail + chapters), Slice 4 (Redeemable codes — closed + Gap A 0d/0e landed 2026-10-13), UI waves 1–3. 78 tests green.
-- **In progress**: Slice 4 (Redeemable codes) — backend unfrozen 2026-10-08, UI ships with backend.
+- **Done**: Slice 1 (Auth), Slice 2 (Catalog), Slice 3 (Detail + chapters), **Slice 4 CLOSED 2026-10-15 (revoke door + duplicate law landed; suite 89 green)**, UI waves 1–3, **Dashboard (profile + courses + edit-profile, #155 2026-10-14)**, **Slice 6 Phases A (trainer row + repo, 2026-10-15) + B/C (CRUD doors + ownership law, curl-proven live 2026-10-20) + THE TRAINER STUDIO (Phase D-first, #161 2026-10-21: profile edit + course CRUD with labels/thumbnails + the episode library doors, backend 89/89 · ng build exit 0 · ng test 2/2 · full arc walked live) + Phase E robots (2026-10-21: the studio's doors pinned — `TrainerCourseServiceTest` 16 + `TrainerCourseControllerMockMvcTest` 23, suite 89 → 128/128)** — Slice 6 rounds ride the tree UNCOMMITTED.
+- **Next on the ladder**: Slice 6 Phase F (trackers + commit — the developer's call) → Slice 5 (payments) → Bunny Stream video (video upload joins HERE on the developer's word: "all of them will go to bunny").
+- **Ladder reordered**: Slice 6 (trainer) → Slice 5 (payments) → Bunny Stream video.
 - **Tech debt**: `Track` enum exists but unused (label-only by design). `VideoStorageService` is a passthrough stub. No progress tracking (out of scope MVP).
 
 ## 10. Session Tracking & Followups
@@ -89,6 +103,7 @@ The project is **self-documenting across sessions** via `notes/`:
 - **`ARCHITECTURE.md`** — "we decided, stop re-litigating" list. Read before ANY design discussion.
 - **`TODO.md`** — all slices in one line each; the project ladder.
 - **Per-slice folders** (`notes/slice-N/`) — each slice's tasklist, phases-preview, testing guide, Q&A. Append-only.
+- **`notes/SCENARIOS.md`** — the boss/trainer/intern test personas + the runnable scenarios (2026-10-21).
 
 **Followup mechanism:** each session starts by reading `SESSION-MEMORY.md` + tail of `PROMPT-HISTORY.md`; ends by overwriting `SESSION-MEMORY.md` and appending to `PROMPT-HISTORY.md`. Conflicts between code and `SITP-Docs/` are **flagged loudly** (⚠ REALITY FLAG), never silently resolved.
 

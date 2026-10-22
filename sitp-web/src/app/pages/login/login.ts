@@ -145,7 +145,8 @@ export class LoginPage {
     }).subscribe({
       next: (res) => {
         this.session.setUser(res.user);
-        this.router.navigate(['/dashboard']);
+        // Trainers land in their studio; everyone else on their courses dashboard.
+        this.router.navigate([res.user.role === 'TRAINER' ? '/trainer' : '/dashboard']);
       },
       error: (err: { status?: number; error?: { message?: string } }) => {
         this.submitting.set(false);

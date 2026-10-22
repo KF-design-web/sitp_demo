@@ -1,39 +1,37 @@
 SITP — TEST ACCOUNTS & REDEEMABLE CODES
-Verified live against the sitp_demo database on 2026-10-13 (WCAST morning).
+Re-verified live against the sitp_demo database on 2026-10-21 (WCAST).
 Supersedes the code tables inside notes/general/SESSION-MEMORY.md and notes/TEST-DATA-seeded-codes.md.
 The closing-test walk (notes/CLOSING-TEST-slice4.txt) ran 2026-10-12/13 — SUCCESS per the developer.
 
-========================================================================
-1. ACCOUNTS (the ones used for testing)
-========================================================================
+  ⚠ 2026-10-21 CLEANUP + SCENARIOS (the developer's orders). Test personas were
+  re-created as a boss/trainer/intern set for the hands-on scenarios in
+  `notes/SCENARIOS.md`. Codes claimed by deleted accounts were RELEASED to the
+  free pool (rows kept, never deleted); sessions were cleared. A pre-cleanup
+  backup sits at %TEMP%\opencode\sitp_backup_users_codes_sessions.sql.
+  Wire proof of all three scenarios: `logs/scenarios-walk.txt`.
 
-  Username                Password        Role       Type        Notes
-  ----------------------  --------------  ---------  ----------  ------------------------
-  marie.ndongo            Password123!    TRAINEE    INTERN      The ONLY intern. Renamed
-                                                                 2026-10-13 from
-                                                                 buffy_walk_1790846709;
-                                                                 password reset same day
-                                                                 (old hash refused both
-                                                                 documented passwords).
-                                                                 userId=1, enabled, France-
-                                                                 style profile kept.
-  123                     (user's own)    TRAINEE    OUTSIDER    Developer's real account.
-                                                                 GAP C: flagged OUTSIDER in
-                                                                 the DB; flip to INTERN if
-                                                                 wanted.
-  step8.naira8549         Password123!    TRAINEE    OUTSIDER    Outsider test persona.
-  boss.demo               Password123!    BOSS       OUTSIDER    Creates + lists codes.
+=======================================================================
+1. ACCOUNTS (login is by EMAIL + password + a math captcha)
+=======================================================================
 
-  Rename walk proof: login by marie.ndongo through the real doors (captcha
-  solved + POST /api/auth/login) -> 200 + cookie + /me answers INTERN card;
-  session then closed with a real logout (204).
+  Email                    Username    Password        Role       Type
+  -----------------------  ----------  --------------  ---------  ----------
+  kenylarry9@gmail.com     larry_keny  (user's own)    TRAINEE    OUTSIDER
+      The developer's real account (id 3). Kept through the cleanup. (Recorded
+      as username "123" before the rename.)
+  trainer@sitp.cm          trainer     Password123!    TRAINER    OUTSIDER
+      The trainer-studio persona (id 16). Owns course 17 (Port Onboarding).
+  boss@sitp.cm             boss        Password123!    BOSS       OUTSIDER
+      The codes manager (id 17): mints + lists + revokes codes.
+  intern@sitp.cm           intern      Password123!    TRAINEE    INTERN
+      The intern learner (id 18). Holds HRE-GHNFQMEK (course 9, 29 days left).
 
-  House rule reminder: single active session per user — logging in as X kills
-  X's prior sessions only. Different accounts never collide.
+  House rule: single active session per user — logging in as X kills X's prior
+  sessions only. Different accounts never collide.
 
-========================================================================
+=======================================================================
 2. COURSES (id as used by the walk)
-========================================================================
+=======================================================================
 
   6  Git Foundations                          OUTSIDER   250 000 XAF (paid)
   7  Graphic Design Fundamentals              OUTSIDER   150 000 XAF (paid)
@@ -41,10 +39,17 @@ The closing-test walk (notes/CLOSING-TEST-slice4.txt) ran 2026-10-12/13 — SUCC
   9  HR Essentials for the Port Workforce     INTERN      50 000 XAF
   10 Freight Documentation & Customs English  INTERN     120 000 XAF
   11 Workplace Communication (EN/FR)          INTERN      75 000 XAF
+  17 Port Onboarding                          OUTSIDER       45.00   owner: trainer
+       Episodes: 27 "Day 1 - Safety and PPE" (1) · 28 "Day 2 - Equipment" (2)
 
-========================================================================
-3. REDEEMABLE CODES (state AFTER the successful closing walk)
-========================================================================
+  SLICE 6 WALK COURSES — REMOVED 2026-10-21 on the developer's order
+  ("I don't see their utility, remove them"): courses 12 + 14 (and retry-dupes
+  13 + 15) deleted via psql — 2 rows, no chapters, no codes. Course 17 is the
+  trainer's demo, created through the studio door during the scenario walk.
+
+=======================================================================
+3. REDEEMABLE CODES (state AFTER the 2026-10-21 scenario walk)
+=======================================================================
 
 Codes are single-use. Claimed rows are HISTORY — do not delete without asking.
 Since 2026-10-13 (Gap A landed): intern codes carry validity_days (a days-left
@@ -54,41 +59,45 @@ lifetime. Minting intern codes now REQUIRES a validity in days (1–3650).
 
   Code            Course  Status   Claimed by         Spare?  Validity
   --------------  ------  -------  -----------------  ------  --------
-  GIT-9NE0U3X2    6       ACTIVE   123                —       —
+  GIT-9NE0U3X2    6       ACTIVE   larry_keny (id 3)  —       —
   GIT-07DMGSWB    6       ACTIVE   —                  SPARE   —
-  GRA-52SR4LCI    7       ACTIVE   step8.naira8549    —       —
+  GIT-51WX3FQ6    6       ACTIVE   —                  free    —
+  GRA-52SR4LCI    7       ACTIVE   —                  free    —
   GRA-WKFBHIPF    7       ACTIVE   —                  SPARE   —
   POR-HH46YMG1    8       ACTIVE   —                  free    —
   POR-7X2Q1UM2    8       ACTIVE   —                  free    —
-  HRE-Z3E9541O    9       ACTIVE   marie.ndongo       —       30 days (proof walk 2026-10-13 11:42)
-  FRE-9B5MTVV9    10      ACTIVE   —                  free    30 days (set 2026-10-13)
-  WOR-VY8WDW2F    11      ACTIVE   —                  free    30 days (set 2026-10-13)
+  HRE-Z3E9541O    9       ACTIVE   —                  free    30 days
+  FRE-9B5MTVV9    10      ACTIVE   —                  free    30 days
+  WOR-VY8WDW2F    11      ACTIVE   —                  free    30 days
+  HRE-N9V1FV4K    9       REVOKED  —                  —       30 days (boss-scenario proof)
+  HRE-GHNFQMEK    9       ACTIVE   intern (id 18)     —       30 days (redeemed 2026-10-21)
 
-========================================================================
+  (HRE-GHNFQMEK was minted by the boss during the walk and redeemed by the
+  intern — the intern now opens every intern course for 30 days. HRE-N9V1FV4K
+  was revoked by the boss — the crossed-out-row proof.)
+
+=======================================================================
 4. KNOWN GAPS (queued decisions, kept here so they are not re-discovered)
-========================================================================
+=======================================================================
 
   DONE 2026-10-13 — Gap A is no longer a gap: an INTERN holding ONE ACTIVE
      intern code (within its time box) opens EVERY intern-targeted course;
      outsider codes stay single-course lifetime; intern minting requires a
-     validity in days. The one-code-opens-all proof walked live the same day.
+     validity in days. Re-proven by the 2026-10-21 intern scenario.
   B. A BOSS sees the locked card like everyone else — the guard asks every
      role for a code. Should bosses see everything? Slice 4 follow-up.
-  C. 123 is account_type=OUTSIDER. The only INTERN is marie.ndongo.
+  C. The developer's real account (larry_keny) is account_type=OUTSIDER.
+     The demo INTERN is intern@sitp.cm.
   D. redeem(): a user can still claim a SECOND code for a course they already
      hold (the duplicate-claim twin cause) — needs the word: idempotent
      redeem, or a unique index on (claimant_id, course_id).
 
-========================================================================
+=======================================================================
 5. RESET RECIPES (pgAdmin or psql, sitp_demo)
-========================================================================
+=======================================================================
 
   Release a burned code back to the free pool:
     UPDATE redeemable_codes SET claimant_id=NULL, redeemed_at=NULL WHERE code='...';
 
-  Un-claim every intern course for the intern after gap A lands:
-    UPDATE redeemable_codes SET claimant_id=NULL, redeemed_at=NULL
-    WHERE code IN ('HRE-Z3E9541O','FRE-9B5MTVV9','WOR-VY8WDW2F');
-
-  Flip gap C (make 123 an INTERN):
-    UPDATE users SET account_type='INTERN' WHERE username='123';
+  Flip the developer's real account to an INTERN (gap C):
+    UPDATE users SET account_type='INTERN' WHERE username='larry_keny';

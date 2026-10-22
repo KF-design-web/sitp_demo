@@ -1,5 +1,6 @@
 package com.example.sitp.course.model;
 
+import com.example.sitp.user.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,11 +29,21 @@ public class Course {
     @Column(length = 2000)
     private String description;
 
+    @Column(length = 500)
+    private String labels;
+
+    @Column(name = "thumbnail_url", length = 1000)
+    private String thumbnailUrl;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "target_audience", nullable = false)
     private Audience targetAudience;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id")
+    private User trainer;
 
 }

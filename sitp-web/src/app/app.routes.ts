@@ -9,6 +9,8 @@ import { VerifyEmailPage } from './pages/verify-email/verify-email';
 import { CreateCodesPage } from './pages/create-codes/create-codes';
 import { CodesListPage } from './pages/codes-list/codes-list';
 import { DashboardPage } from './pages/dashboard/dashboard';
+import { TrainerDashboardPage } from './pages/trainer-dashboard/trainer-dashboard';
+import { TrainerCoursePage } from './pages/trainer-course/trainer-course';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -22,4 +24,6 @@ export const routes: Routes = [
   { path: 'codes/create', component: CreateCodesPage, title: 'SITP — Create codes' },
   { path: 'codes', component: CodesListPage, title: 'SITP — Codes' },
   { path: 'dashboard', component: DashboardPage, title: 'SITP — Dashboard' },
+  { path: 'trainer', component: TrainerDashboardPage, title: 'SITP — Trainer studio' },
+  { path: 'trainer/courses/:id', component: TrainerCoursePage, title: 'SITP — Trainer library' },
 ];

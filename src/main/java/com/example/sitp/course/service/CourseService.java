@@ -6,8 +6,16 @@ import com.example.sitp.access.repository.RedeemableCodeRepository;
 import com.example.sitp.course.CourseAccessGuard;
 import com.example.sitp.course.dto.CourseDetailResponse;
 import com.example.sitp.course.dto.CourseResponse;
+import com.example.sitp.course.dto.ChapterRequest;
+import com.example.sitp.course.dto.ChapterResponse;
+import com.example.sitp.course.dto.CreateCourseRequest;
 import com.example.sitp.course.dto.MyCourseResponse;
+import com.example.sitp.course.dto.UpdateCourseRequest;
+import com.example.sitp.course.exception.CourseDeletionBlockedException;
+import com.example.sitp.course.exception.ChapterNotFoundException;
 import com.example.sitp.course.exception.CourseNotFoundException;
+import com.example.sitp.course.exception.CourseOwnershipException;
+import com.example.sitp.course.model.Chapter;
 import com.example.sitp.course.model.Course;
 import com.example.sitp.course.repository.ChapterRepository;
 import com.example.sitp.course.repository.CourseRepository;
@@ -17,6 +25,7 @@ import com.example.sitp.user.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -95,6 +104,131 @@ public class CourseService {
                     .build());
         }
         return result;
+    }
+
+    public CourseResponse createCourse(CreateCourseRequest request, Long trainerId) {
+        User trainer = userRepository.findById(trainerId).orElseThrow();
+
+        Course course = Course.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .labels(request.getLabels())
+                .thumbnailUrl(request.getThumbnailUrl())
+                .price(request.getPrice())
+                .targetAudience(request.getTargetAudience())
+                .trainer(trainer)
+                .build();
+
+        return CourseResponse.fromEntity(courseRepository.save(course), true);
+    }
+
+    public List<CourseResponse> getMyCourses(Long trainerId) {
+        return courseRepository.findByTrainerId(trainerId).stream()
+                .map(course -> CourseResponse.fromEntity(course, true))
+                .toList();
+    }
+
+    public Course getCourseForTrainer(Long courseId, Long trainerId) {
+        List<Course> owned = courseRepository.findByTrainerIdAndId(trainerId, courseId);
+        if (!owned.isEmpty()) {
+            return owned.get(0);
+        }
+        if (courseRepository.existsById(courseId)) {
+            throw new CourseOwnershipException();
+        }
+        throw new CourseNotFoundException();
+    }
+
+    @Transactional
+    public CourseResponse updateCourse(Long courseId, Long trainerId, UpdateCourseRequest request) {
+        Course course = getCourseForTrainer(courseId, trainerId);
+
+        course.setTitle(request.getTitle());
+        course.setDescription(request.getDescription());
+        course.setLabels(request.getLabels());
+        course.setThumbnailUrl(request.getThumbnailUrl());
+        course.setPrice(request.getPrice());
+
+        return CourseResponse.fromEntity(courseRepository.save(course), true);
+    }
+
+    @Transactional
+    public void deleteCourse(Long courseId, Long trainerId) {
+        Course course = getCourseForTrainer(courseId, trainerId);
+
+        if (!redeemableCodeRepository.findByCourseId(courseId).isEmpty()) {
+            throw new CourseDeletionBlockedException();
+        }
+        chapterRepository.deleteByCourseId(courseId);
+        courseRepository.delete(course);
+    }
+
+    public CourseDetailResponse getTrainerCourseDetail(Long courseId, Long trainerId) {
+        Course course = getCourseForTrainer(courseId, trainerId);
+
+        List<com.example.sitp.course.model.Chapter> chapters =
+                chapterRepository.findByCourseIdOrderByPositionAsc(courseId);
+
+        return CourseDetailResponse.from(course, chapters, true);
+    }
+
+    @Transactional
+    public ChapterResponse createChapter(Long courseId, Long trainerId, ChapterRequest request) {
+        Course course = getCourseForTrainer(courseId, trainerId);
+
+        Chapter last = chapterRepository.findFirstByCourseIdOrderByPositionDesc(courseId);
+        int position = request.getPosition() != null
+                ? request.getPosition()
+                : (last != null ? last.getPosition() + 1 : 1);
+
+        Chapter chapter = Chapter.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .labels(request.getLabels())
+                .thumbnailUrl(request.getThumbnailUrl())
+                .videoUrl(request.getVideoUrl())
+                .position(position)
+                .course(course)
+                .build();
+
+        return ChapterResponse.fromEntity(chapterRepository.save(chapter));
+    }
+
+    @Transactional
+    public ChapterResponse updateChapter(Long chapterId, Long trainerId, ChapterRequest request) {
+        Chapter chapter = chapterForTrainer(chapterId, trainerId);
+
+        chapter.setTitle(request.getTitle());
+        chapter.setDescription(request.getDescription());
+        chapter.setLabels(request.getLabels());
+        chapter.setThumbnailUrl(request.getThumbnailUrl());
+        chapter.setVideoUrl(request.getVideoUrl());
+        if (request.getPosition() != null) {
+            chapter.setPosition(request.getPosition());
+        }
+
+        return ChapterResponse.fromEntity(chapterRepository.save(chapter));
+    }
+
+    @Transactional
+    public void deleteChapter(Long chapterId, Long trainerId) {
+        Chapter chapter = chapterForTrainer(chapterId, trainerId);
+
+        chapterRepository.delete(chapter);
+    }
+
+    private Chapter chapterForTrainer(Long chapterId, Long trainerId) {
+        Chapter chapter = chapterRepository.findById(chapterId)
+                .orElseThrow(ChapterNotFoundException::new);
+
+        User trainer = chapter.getCourse().getTrainer();
+        if (trainer == null || !trainer.getId().equals(trainerId)) {
+            if (courseRepository.existsById(chapter.getCourse().getId())) {
+                throw new CourseOwnershipException();
+            }
+            throw new CourseNotFoundException();
+        }
+        return chapter;
     }
 
     private boolean isExpired(RedeemableCode code) {

@@ -26,6 +26,14 @@ public class CourseDetailResponse {
     @Schema(description = "The full description (B3: never clamped on screens).")
     private final String description;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "The course's free-text tags, comma-separated.")
+    private final String labels;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "The course cover image link.")
+    private final String thumbnailUrl;
+
     @Schema(description = "Who the course is for: INTERN or OUTSIDER.")
     private final Audience targetAudience;
 
@@ -44,6 +52,8 @@ public class CourseDetailResponse {
                 .id(course.getId())
                 .title(course.getTitle())
                 .description(course.getDescription())
+                .labels(course.getLabels())
+                .thumbnailUrl(course.getThumbnailUrl())
                 .targetAudience(course.getTargetAudience())
                 .price(priceVisible ? course.getPrice() : null)
                 .priceVisible(priceVisible)

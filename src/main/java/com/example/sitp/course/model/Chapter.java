@@ -24,6 +24,15 @@ public class Chapter {
     @Column(nullable = false)
     private String title;
 
+    @Column(length = 2000)
+    private String description;
+
+    @Column(length = 500)
+    private String labels;
+
+    @Column(name = "thumbnail_url", length = 1000)
+    private String thumbnailUrl;
+
     @Column(name = "video_url", length = 1000)
     private String videoUrl;
 

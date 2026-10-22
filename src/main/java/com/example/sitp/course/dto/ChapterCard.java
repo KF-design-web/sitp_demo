@@ -17,6 +17,15 @@ public class ChapterCard {
     @Schema(description = "The chapter's name, in teaching order.")
     private final String title;
 
+    @Schema(description = "What the episode teaches.")
+    private final String description;
+
+    @Schema(description = "The episode's free-text tags.")
+    private final String labels;
+
+    @Schema(description = "The cover image link for the episode card.")
+    private final String thumbnailUrl;
+
     @Schema(description = "The teaching-order number (1, 2, 3, ...). The order is DATA, not database luck.")
     private final Integer position;
 
@@ -27,6 +36,9 @@ public class ChapterCard {
         return ChapterCard.builder()
                 .id(chapter.getId())
                 .title(chapter.getTitle())
+                .description(chapter.getDescription())
+                .labels(chapter.getLabels())
+                .thumbnailUrl(chapter.getThumbnailUrl())
                 .position(chapter.getPosition())
                 .videoUrl(chapter.getVideoUrl())
                 .build();

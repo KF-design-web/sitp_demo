@@ -24,6 +24,14 @@ public class CourseResponse {
     @Schema(description = "A short text about what the course teaches.")
     private final String description;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "The course's free-text tags, comma-separated (a trainer studio field — null on courses because they carry none).")
+    private final String labels;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "The course cover image link (a trainer studio field).")
+    private final String thumbnailUrl;
+
     @Schema(description = "Who the course is for: INTERN (company interns) or OUTSIDER (pays per course).")
     private final Audience targetAudience;
 
@@ -39,6 +47,8 @@ public class CourseResponse {
                 .id(course.getId())
                 .title(course.getTitle())
                 .description(course.getDescription())
+                .labels(course.getLabels())
+                .thumbnailUrl(course.getThumbnailUrl())
                 .targetAudience(course.getTargetAudience())
                 .price(priceVisible ? course.getPrice() : null)
                 .priceVisible(priceVisible)
