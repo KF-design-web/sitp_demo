@@ -386,6 +386,110 @@ export const i18n: Record<string, { en: string; fr: string }> = {
   'dashboard.savingProfile': { en: 'Saving…', fr: 'Enregistrement…' },
   'dashboard.profileSaved': { en: 'Profile updated.', fr: 'Profil mis à jour.' },
   'dashboard.profileError': { en: 'Could not update profile.', fr: 'Impossible de mettre à jour le profil.' },
+
+  'header.payments': { en: 'Payments', fr: 'Paiements' },
+  'payments.heading': { en: 'Payment proofs', fr: 'Justificatifs de paiement' },
+  'payments.subtitle': {
+    en: 'Proofs waiting for verification. Approve opens the course for the buyer (a fresh code, claimed for them); reject signs their session out immediately.',
+    fr: "Justificatifs en attente de vérification. Approuver ouvre le cours à l'acheteur (un code neuf, réclamé pour lui) ; refuser déconnecte sa session immédiatement.",
+  },
+  'payments.loading': { en: 'Loading the queue…', fr: 'Chargement de la file…' },
+  'payments.empty-title': { en: 'The queue is clear', fr: 'La file est vide' },
+  'payments.empty-text': {
+    en: 'No payment proof is waiting for verification.',
+    fr: 'Aucun justificatif de paiement ne attend de vérification.',
+  },
+  'payments.denied-title': { en: 'Only the Admin_Assistant runs this queue', fr: "Seul l'assistant administrateur tient cette file" },
+  'payments.denied-text': {
+    en: 'You need the Admin_Assistant role to see the payment queue.',
+    fr: "Le rôle d'assistant administrateur est requis pour voir la file des paiements.",
+  },
+  'payments.col-buyer': { en: 'Buyer', fr: 'Acheteur' },
+  'payments.col-course': { en: 'Course', fr: 'Cours' },
+  'payments.col-method': { en: 'Method', fr: 'Moyen' },
+  'payments.col-amount': { en: 'Amount', fr: 'Montant' },
+  'payments.col-receipt': { en: 'Receipt', fr: 'Justificatif' },
+  'payments.col-created': { en: 'Submitted', fr: 'Envoyé le' },
+  'payments.view-receipt': { en: 'Open receipt', fr: 'Ouvrir le justificatif' },
+  'payments.approve': { en: 'Approve', fr: 'Approuver' },
+  'payments.reject': { en: 'Reject', fr: 'Refuser' },
+  'payments.approve-confirm-title': {
+    en: 'Approve this proof?',
+    fr: 'Approuver ce justificatif ?',
+  },
+  'payments.approve-confirm-text': {
+    en: 'A fresh lifetime code is minted and claimed for the buyer — the course opens for them immediately.',
+    fr: "Un code à vie neuf est créé et réclamé pour l'acheteur — le cours s'ouvre pour lui immédiatement.",
+  },
+  'payments.reject-confirm-title': {
+    en: 'Reject this proof?',
+    fr: 'Refuser ce justificatif ?',
+  },
+  'payments.reject-confirm-text': {
+    en: 'One strike: the buyer is signed out of every session right away.',
+    fr: "Un seul avertissement : l'acheteur est déconnecté de toutes ses sessions immédiatement.",
+  },
+  'payments.confirm-go': { en: 'Yes, decide', fr: 'Oui, décider' },
+  'payments.confirm-cancel': { en: 'Not yet', fr: 'Pas encore' },
+  'payments.workflow-cols': { en: 'Buyer, course, method, amount and receipt for every proof.', fr: "Acheteur, cours, moyen, montant et justificatif pour chaque preuve." },
+
+  'payments.pane-title': { en: 'Already paid?', fr: 'Vous avez déjà payé ?' },
+  'payments.pane-text': {
+    en: 'Pay the course price by Mobile Money or bank transfer, then attach the receipt below. An Admin_Assistant verifies it — once approved, the course opens for you on its own.',
+    fr: "Payez le prix du cours par Mobile Money ou virement bancaire, puis joignez le justificatif ci-dessous. Un assistant administrateur le vérifie — une fois approuvé, le cours s'ouvre pour vous tout seul.",
+  },
+  'payments.pane-method-label': { en: 'How you paid', fr: 'Comment vous avez payé' },
+  'payments.pane-amount-label': { en: 'Amount paid (XAF)', fr: 'Montant payé (XAF)' },
+  'payments.pane-receipt-label': { en: 'Receipt (screenshot or scan)', fr: 'Justificatif (capture ou scan)' },
+  'payments.pane-receipt-choose': { en: 'Choose a file', fr: 'Choisir un fichier' },
+  'payments.pane-submit': { en: 'Send my proof', fr: 'Envoyer mon justificatif' },
+  'payments.pane-submitting': { en: 'Sending…', fr: 'Envoi…' },
+  'payments.pane-required-amount': {
+    en: 'Enter the amount you paid.',
+    fr: 'Saisissez le montant que vous avez payé.',
+  },
+  'payments.pane-required-method': {
+    en: 'Choose how you paid.',
+    fr: 'Choisissez votre moyen de paiement.',
+  },
+  'payments.pane-required-file': {
+    en: 'Attach the receipt file.',
+    fr: 'Joignez le fichier justificatif.',
+  },
+  'payments.pane-sent-title': { en: 'Proof received', fr: 'Justificatif reçu' },
+  'payments.pane-sent-text': {
+    en: 'Your receipt is in the verification queue. When the Admin_Assistant approves it, the course opens for you — no code to type.',
+    fr: "Votre justificatif est dans la file de vérification. Quand l'assistant administrateur l'approuve, le cours s'ouvre pour vous — sans code à saisir.",
+  },
+  'payments.pane-redeem-divider': {
+    en: 'Or redeem a code you already have',
+    fr: 'Ou échangez un code que vous avez déjà',
+  },
+
+  'error.api.proof-outsiders-only': {
+    en: 'Only outsiders submit payment proofs.',
+    fr: 'Seuls les externes envoient des justificatifs de paiement.',
+  },
+  'error.api.proof-intern-free': {
+    en: 'This course is free for interns. It cannot be bought.',
+    fr: 'Ce cours est gratuit pour les stagiaires. Il ne peut pas être acheté.',
+  },
+  'error.api.proof-already-pending': {
+    en: 'A payment proof is already waiting verification for this course.',
+    fr: "Un justificatif de paiement attend déjà une vérification pour ce cours.",
+  },
+  'error.api.proof-already-decided': {
+    en: 'This payment proof was already decided.',
+    fr: 'Ce justificatif de paiement a déjà été traité.',
+  },
+  'error.api.proof-not-found': {
+    en: 'Payment proof not found.',
+    fr: 'Justificatif de paiement introuvable.',
+  },
+  'error.api.receipt-required': {
+    en: 'The receipt file is required.',
+    fr: 'Le fichier justificatif est requis.',
+  },
 };
 
 export const contentFr: Record<string, string> = {

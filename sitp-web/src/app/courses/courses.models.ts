@@ -3,6 +3,8 @@ export interface CourseSummary {
   title: string;
   description: string;
   targetAudience: 'INTERN' | 'OUTSIDER';
+  price?: number | null;
+  priceVisible?: boolean;
 }
 
 const COURSE_THUMBNAILS: Record<string, string> = {

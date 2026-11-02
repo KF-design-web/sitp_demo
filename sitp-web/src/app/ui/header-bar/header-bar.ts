@@ -38,6 +38,14 @@ import { ConfirmModal } from '../confirm-modal/confirm-modal';
               {{ t('header.codes') }}
             </a>
           }
+          @if (isAssistant()) {
+            <a
+              routerLink="/payments"
+              class="text-sm font-medium text-muted transition-colors hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {{ t('header.payments') }}
+            </a>
+          }
         </div>
 
         <div class="flex items-center gap-4">
@@ -113,6 +121,11 @@ export class HeaderBar {
   isTrainer(): boolean {
     const u = this.user();
     return u !== null && u.role === 'TRAINER';
+  }
+
+  isAssistant(): boolean {
+    const u = this.user();
+    return u !== null && u.role === 'ADMIN_ASSISTANT';
   }
 
   setLang(l: 'en' | 'fr'): void {

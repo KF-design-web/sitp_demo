@@ -121,6 +121,41 @@ public class GlobalExceptionHandler {
                         "This course has codes handed out and cannot be deleted yet."));
     }
 
+    @ExceptionHandler(com.example.sitp.payment.exception.ProofNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProofNotFound(com.example.sitp.payment.exception.ProofNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(HttpStatus.NOT_FOUND.value(),
+                        "Payment proof not found."));
+    }
+
+    @ExceptionHandler(com.example.sitp.payment.exception.ProofAlreadyPendingException.class)
+    public ResponseEntity<ErrorResponse> handleProofAlreadyPending(com.example.sitp.payment.exception.ProofAlreadyPendingException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(),
+                        "A payment proof is already waiting verification for this course."));
+    }
+
+    @ExceptionHandler(com.example.sitp.payment.exception.ProofAlreadyDecidedException.class)
+    public ResponseEntity<ErrorResponse> handleProofAlreadyDecided(com.example.sitp.payment.exception.ProofAlreadyDecidedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(),
+                        "This payment proof was already decided."));
+    }
+
+    @ExceptionHandler(com.example.sitp.payment.exception.ProofSubmitForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleProofSubmitForbidden(com.example.sitp.payment.exception.ProofSubmitForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of(HttpStatus.FORBIDDEN.value(),
+                        "Only outsiders submit payment proofs."));
+    }
+
+    @ExceptionHandler(com.example.sitp.payment.exception.ProofNotPurchasableException.class)
+    public ResponseEntity<ErrorResponse> handleProofNotPurchasable(com.example.sitp.payment.exception.ProofNotPurchasableException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of(HttpStatus.FORBIDDEN.value(),
+                        "This course is free for interns. It cannot be bought."));
+    }
+
     @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

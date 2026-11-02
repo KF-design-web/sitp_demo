@@ -32,6 +32,8 @@ app:
   mail:
     enabled: ${MAIL_ENABLED:false}
     from: ${MAIL_FROM:SITP <no-reply@sitp.local>}
+  receipts:
+    dir: ${RECEIPTS_DIR:./receipts}
 
 springdoc:
   default-support-form-data: true

@@ -19,3 +19,5 @@ spring:
 app:
   mail:
     enabled: false  # tests: codes stay in the console, no SMTP attempt
+  receipts:
+    dir: ${java.io.tmpdir}/sitp-test-receipts  # tests: receipts land in temp, never the repo

@@ -15,6 +15,12 @@ export class LangService {
     'Intern codes need a validity between 1 and 3650 days.': 'error.api.validity-bounds',
     'Not authenticated.': 'error.api.not-authenticated',
     'Unexpected server error.': 'error.api.unexpected',
+    'Only outsiders submit payment proofs.': 'error.api.proof-outsiders-only',
+    'This course is free for interns. It cannot be bought.': 'error.api.proof-intern-free',
+    'A payment proof is already waiting verification for this course.': 'error.api.proof-already-pending',
+    'This payment proof was already decided.': 'error.api.proof-already-decided',
+    'Payment proof not found.': 'error.api.proof-not-found',
+    'The receipt file is required.': 'error.api.receipt-required',
   };
 
   readonly lang = signal<Lang>(
