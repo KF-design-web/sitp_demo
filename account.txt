@@ -16,9 +16,8 @@ The closing-test walk (notes/CLOSING-TEST-slice4.txt) ran 2026-10-12/13 â€” SUCC
 
   Email                    Username    Password        Role       Type
   -----------------------  ----------  --------------  ---------  ----------
-  kenylarry9@gmail.com     larry_keny  (user's own)    TRAINEE    OUTSIDER
-      The developer's real account (id 3). Kept through the cleanup. (Recorded
-      as username "123" before the rename.)
+  kenylarry9@gmail.com     larry_keny  (user's own)    TRAINEE    INTERN
+      The developer's real account (id 3). Flipped to INTERN per Gap C (2026-11-03) so the developer can test both ways.
   trainer@sitp.cm          trainer     Password123!    TRAINER    OUTSIDER
       The trainer-studio persona (id 16). Owns course 17 (Port Onboarding).
   boss@sitp.cm             boss        Password123!    BOSS       OUTSIDER
@@ -128,3 +127,15 @@ lifetime. Minting intern codes now REQUIRES a validity in days (1â€“3650).
   Receipt store: local-disk receipt folder under the backend's receipts/
   directory (fileUrl column; the /receipts/ path is gitignored - the repo keeps CODE).
   Receipt streaming door (No. 5): GET /api/payment-proofs/{id}/receipt, Assistant-only.
+
+=======================================================================
+7. PARKED GAPS (queued decisions, kept here so they are not re-discovered)
+=======================================================================
+
+  Gap B (2026-11-03): The Boss can see all courses details and edit them if he wants to — he doesn't need any code.
+      Decision: BOSS ACCESS GRANTED to all courses and the trainer studio (no code required). This is a follow-up to Slice 4.
+
+  Gap C: Already handled by flipping larry_keny to INTERN per your order (2026-11-03).
+
+  Gap D (2026-11-03): No change. If a user already holds a course, there is no reason to ask for a second code.
+      Decision: NO second-code request for already-held courses — the duplicate-redeem law (Slice 4) already covers the OUTSIDER case; the line is fully covered and no action needed.
