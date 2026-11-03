@@ -101,3 +101,30 @@ lifetime. Minting intern codes now REQUIRES a validity in days (1–3650).
 
   Flip the developer's real account to an INTERN (gap C):
     UPDATE users SET account_type='INTERN' WHERE username='larry_keny';
+
+=======================================================================
+6. SLICE 5 (PAYMENT PROOFS) � state after backend-run27, 2026-11-03
+=======================================================================
+
+  Payment-proof personas (password Password123!):
+  assistant@sitp.cm   assistant   ADMIN_ASSISTANT  id 20  approves/rejects the queue;
+                      ALSO sees every /codes staff page (the 0a gate: the Boss has
+                      NO queue door)
+  buyer@sitp.cm       buyer       TRAINEE-OUTSIDER id 19   the run25/26 persona:
+                      proof 1 APPROVED course 6 / proof 2 REJECTED course 7 /
+                      proofs 3-4 replied in run26 (proof 3 approve -> holds course 6)
+  walk27alice@sitp.cm walk27alice TRAINEE-OUTSIDER id 21   FRESH outsider of the run27
+                      close walk: registered -> email-verified -> bought course 6 via
+                      the queue (proof 5 APPROVED; holds code GIT-E0MSKXN3 lifetime)
+  walk27bruno@sitp.cm walk27bruno TRAINEE-OUTSIDER id 22   FRESH outsider #2: proof 6
+                      REJECTED -> the ONE STRIKE: his sessions are DEAD, re-entry =
+                      fresh login (Password123! still works)
+
+  Payment-proof rows now on the books (statuses NEVER revert):
+    proof 5 APPROVED (alice -> course 6, 250000 XAF, MTN Mobile Money, linked
+      code GIT-E0MSKXN3 minted validity_days NULL = lifetime, claimant 21)
+    proof 6 REJECTED (bruno -> course 7, 150000 XAF, Orange Money, no code minted)
+
+  Receipt store: local-disk receipt folder under the backend's receipts/
+  directory (fileUrl column; the /receipts/ path is gitignored - the repo keeps CODE).
+  Receipt streaming door (No. 5): GET /api/payment-proofs/{id}/receipt, Assistant-only.
