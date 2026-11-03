@@ -12,6 +12,8 @@ import { CourseDetail } from '../../courses/courses.models';
 import { formatXaf } from '../../courses/format-xaf';
 import { CodesService } from '../../codes/codes.service';
 import { RedeemConfirmation } from '../../codes/codes.models';
+import { PaymentsService } from '../../payments/payments.service';
+import { SessionService } from '../../core/session.service';
 import { ErrorSlip } from '../../ui/error-slip/error-slip';
 import { Button } from '../../ui/button/button';
 import { LangService } from '../../core/lang.service';
@@ -77,6 +79,74 @@ import { LangService } from '../../core/lang.service';
         <div class="mx-auto mt-8 max-w-md rounded-xl border border-line bg-surface p-8 shadow-card">
           <h1 class="text-lg font-semibold text-ink">{{ t('codes.locked-title') }}</h1>
           <p class="mt-2 text-sm text-muted">{{ t('codes.locked-text') }}</p>
+
+          @if (isOutsider()) {
+            @if (paidSent()) {
+              <div class="mt-6 rounded-xl border border-line bg-bg p-4 text-center">
+                <h2 class="text-base font-semibold text-ink">{{ t('payments.pane-sent-title') }}</h2>
+                <p class="mt-2 text-sm text-muted">{{ t('payments.pane-sent-text') }}</p>
+              </div>
+            } @else {
+              <div class="mt-6 rounded-xl border border-line bg-bg p-4">
+                <h2 class="text-base font-semibold text-ink">{{ t('payments.pane-title') }}</h2>
+                <p class="mt-2 text-sm text-muted">{{ t('payments.pane-text') }}</p>
+
+                <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label class="block text-sm font-medium text-ink" for="pane-method">
+                      {{ t('payments.pane-method-label') }}
+                    </label>
+                    <input
+                      id="pane-method"
+                      type="text"
+                      class="mt-2 w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                      [value]="paneMethod()"
+                      (input)="onPaneMethodInput($event)"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-ink" for="pane-amount">
+                      {{ t('payments.pane-amount-label') }}
+                    </label>
+                    <input
+                      id="pane-amount"
+                      type="number"
+                      min="0"
+                      class="mt-2 w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                      [value]="paneAmount()"
+                      (input)="onPaneAmountInput($event)"
+                    />
+                  </div>
+                </div>
+
+                <label class="mt-4 inline-block cursor-pointer rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-ink hover:border-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary">
+                  {{ t('payments.pane-receipt-choose') }}
+                  <input type="file" class="hidden" (change)="onPaneReceiptInput($event)" />
+                </label>
+                @if (paneReceipt() !== null) {
+                  <p class="mt-2 text-xs text-muted">{{ paneReceipt()!.name }}</p>
+                }
+
+                @if (paneError()) {
+                  <div class="mt-3">
+                    <app-error-slip [message]="paneError()" />
+                  </div>
+                }
+
+                <div class="mt-4">
+                  <app-button
+                    type="button"
+                    [loading]="paneSubmitting()"
+                    [loadingLabel]="t('payments.pane-submitting')"
+                    (click)="submitProof()"
+                  >
+                    {{ t('payments.pane-submit') }}
+                  </app-button>
+                </div>
+              </div>
+            }
+            <p class="mt-6 text-center text-xs uppercase text-muted">{{ t('payments.pane-redeem-divider') }}</p>
+          }
 
           <label class="mt-6 block text-sm font-medium text-ink" for="redeem-code">
             {{ t('codes.redeem-label') }}
@@ -169,7 +239,9 @@ import { LangService } from '../../core/lang.service';
 export class CourseDetailPage {
   private courseService = inject(CourseService);
   private codesService = inject(CodesService);
+  private paymentsService = inject(PaymentsService);
   private langService = inject(LangService);
+  private session = inject(SessionService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -181,6 +253,13 @@ export class CourseDetailPage {
   readonly redeemCode = signal('');
   readonly redeeming = signal(false);
   readonly redeemError = signal('');
+
+  readonly paidSent = signal(false);
+  readonly paneMethod = signal('');
+  readonly paneAmount = signal('');
+  readonly paneReceipt = signal<File | null>(null);
+  readonly paneSubmitting = signal(false);
+  readonly paneError = signal('');
 
   readonly skeletons = [1, 2, 3, 4];
 
@@ -217,6 +296,7 @@ export class CourseDetailPage {
           this.router.navigate(['/login'], { queryParams: { from: 'detail' } });
         } else if (err?.status === 403) {
           this.locked.set(true);
+          this.primePaidPane();
         } else {
           this.error.set(true);
         }
@@ -224,8 +304,74 @@ export class CourseDetailPage {
     });
   }
 
+  isOutsider(): boolean {
+    const u = this.session.user();
+    return u !== null && u.accountType === 'OUTSIDER';
+  }
+
+  primePaidPane(): void {
+    this.courseService.getAll().subscribe({
+      next: (list) => {
+        const row = list.find((c) => c.id === this.courseId());
+        if (row && row.priceVisible && row.price != null && this.paneAmount() === '') {
+          this.paneAmount.set(String(row.price));
+        }
+      },
+    });
+  }
+
   onRedeemCodeInput(event: Event): void {
     this.redeemCode.set((event.target as HTMLInputElement).value);
+  }
+
+  onPaneMethodInput(event: Event): void {
+    this.paneMethod.set((event.target as HTMLInputElement).value);
+  }
+
+  onPaneAmountInput(event: Event): void {
+    this.paneAmount.set((event.target as HTMLInputElement).value);
+  }
+
+  onPaneReceiptInput(event: Event): void {
+    this.paneReceipt.set((event.target as HTMLInputElement).files?.[0] ?? null);
+  }
+
+  submitProof(): void {
+    const amount = this.paneAmount().trim();
+    const method = this.paneMethod().trim();
+    const receipt = this.paneReceipt();
+    this.paneError.set('');
+    if (!amount) {
+      this.paneError.set(this.t('payments.pane-required-amount'));
+      return;
+    }
+    if (!method) {
+      this.paneError.set(this.t('payments.pane-required-method'));
+      return;
+    }
+    if (receipt === null) {
+      this.paneError.set(this.t('payments.pane-required-file'));
+      return;
+    }
+
+    this.paneSubmitting.set(true);
+    this.paymentsService.submit(this.courseId(), amount, method, receipt).subscribe({
+      next: () => {
+        this.paneSubmitting.set(false);
+        this.paidSent.set(true);
+      },
+      error: (err: { status?: number; error?: { message?: string } }) => {
+        this.paneSubmitting.set(false);
+        const apiMsg = err?.error?.message;
+        this.paneError.set(
+          err?.status === 401
+            ? this.t('detail.login-notice')
+            : apiMsg
+              ? this.tApiError(apiMsg)
+              : this.t('error.unreachable'),
+        );
+      },
+    });
   }
 
   redeem(): void {
